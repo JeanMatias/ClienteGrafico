@@ -5,6 +5,44 @@
 
 #include "..\..\SnakeDLL\SnakeDLL\SnakeDLL.h"
 
+// ============================================================================= //
+//			ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES - CLIENTE CONSOLA          //
+// ============================================================================= //
+
+/* ----------------------------------------------------- */
+/*  VARIÁVEIS GLOBAIS									 */
+/* ----------------------------------------------------- */
+HANDLE hThread;
+
+/* ----------------------------------------------------- */
+/*  PROTOTIPOS FUNÇÕES DAS THREADS						 */
+/* ----------------------------------------------------- */
+DWORD WINAPI Interage_Cliente(LPVOID param);
+DWORD WINAPI interageJogo(LPVOID param);
+
+
+/* ----------------------------------------------------- */
+/*  PROTOTIPOS FUNÇÕES									 */
+/* ----------------------------------------------------- */
+void chamaCriaJogo(void);
+void imprimeMapa();
+void chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo);
+
+
+/* ----------------------------------------------------- */
+/*  VARIAVEIS GLOBAIS PARA A DLL						 */
+/* ----------------------------------------------------- */
+int numJogadores = 0;				//Num Jogadores a jogar nesta maquina
+int indiceCobras = 0;				//Indice na memoria Dinamica em que se encontram a primeira cobra desta maquina.
+TCHAR username1[SIZE_USERNAME];		//Nome do Jogador 1 desta Maquina
+TCHAR username2[SIZE_USERNAME];		//Nome do Jogador 2 desta Maquina
+int pId;							//Process Id deste cliente
+int linhas;
+int colunas;
+int mapa[MAX_LINHAS][MAX_COLUNAS];
+
+// ========= FIM ZONA DECLARAÇÃO DE VARIAVEIS E FUNÇÕES - CLIENTE CONSOLA ====== //
+
 /* ===================================================== */
 /* Programa base (esqueleto) para aplicações Windows     */
 /* ===================================================== */
@@ -38,7 +76,6 @@ STARTUPINFO si;
 // *************************  HANDLES GLOBAIS ********************
 
 HINSTANCE hInstGlobal;
-HACCEL hAccel;		// Handler da resource accelerators (teclas de atalho
 
 // ============================================================================
 // FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()
@@ -62,6 +99,20 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	MSG lpMsg;		// MSG é uma estrutura definida no Windows para as mensagens
 	WNDCLASSEX wcApp;	// WNDCLASSEX é uma estrutura cujos membros servem para 
 	BOOL ret;			// definir as características da classe da janela
+	HACCEL hAccel;		// Handler da resource accelerators (teclas de atalho
+
+	hInstGlobal = hInst;
+
+	/* ---- DEFINIÇÕES ---- CONSOLA ----- */
+	DWORD tid;
+	TCHAR buffer[TAM_BUFFER];
+	int var_inicio = 0;
+
+	pId = GetCurrentProcessId();
+
+	preparaMemoriaPartilhada();
+
+	/* ---- Definição Pipes ---- */
 
 						// ============================================================================
 						// 1. Definição das características da janela "wcApp" 
@@ -90,7 +141,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 										// (NULL = não tem menu)
 	wcApp.cbClsExtra = 0;				// Livre, para uso particular
 	wcApp.cbWndExtra = 0;				// Livre, para uso particular
-	wcApp.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wcApp.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
 	// WHITE_BRUSH
 	// "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  // "GetStockObject".Neste caso o fundo será branco
 	// ============================================================================
@@ -104,6 +155,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	hWnd = CreateWindow(
 		szProgName,			// Nome da janela (programa) definido acima
 		TEXT("Snake Multiplayer"),// Texto que figura na barra do título
+		// WS_VSCROLL |           // Adicinar Scrool Bar se necessário
+		
 		WS_OVERLAPPEDWINDOW,	// Estilo da janela (WS_OVERLAPPED= normal)
 		CW_USEDEFAULT,
 		//CW_USEDEFAULT,		// Posição x pixels (default=à direita da última)
@@ -311,7 +364,10 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 	case WM_COMMAND:    // Para configuração dos parametros de TABULEIRO
 						// Sem PAI fica não bloqueante, pode ficar NULL ou Handle do Pai para bloquear
-		if (wParam == ID_SERVIDOR_REMOTO)
+		if (HIWORD(wParam))		
+			DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
+		else
+		if (wParam == ID_SERVIDOR_REMOTO )
 			DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
 		else
 		if (wParam == ID_CONFIGURAR_TABULEIRO)
@@ -356,4 +412,144 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
 	}
 	return(0);
+}
+
+// ==================================================================================== //
+//		FUNÇÕES CLIENTE CONSOLA                                                         //
+// ==================================================================================== //
+
+
+/*----------------------------------------------------------------- */
+/*  THREAD - Função que escreve mensagens na memoria partilhada 	*/
+/* ---------------------------------------------------------------- */
+DWORD WINAPI Interage_Cliente(LPVOID param) {
+
+	TCHAR buf[SIZE_USERNAME];
+	int var_inicio;
+	MemGeral aux;
+	DWORD tid;
+
+	_tprintf(TEXT("Nome 1: "));
+	fflush(stdin);
+	_fgetts(username1, SIZE_USERNAME, stdin);
+	username1[_tcslen(username1) - 1] = '\0';
+
+	_tprintf(TEXT("Nome 2: "));
+	fflush(stdin);
+	_fgetts(username2, SIZE_USERNAME, stdin);
+	username1[_tcslen(username2) - 1] = '\0';
+
+	while (1) {
+		system("cls");
+		_tprintf(TEXT("\n\n\t 1 - Criar Jogo. \n\n\t 2 - Associar a Jogo. \n\n\t 12 - Iniciar Jogo. \n\n\t> "));
+		fflush(stdin);
+		_fgetts(buf, SIZE_USERNAME, stdin);
+		buf[_tcslen(buf) - 1] = '\0';
+		var_inicio = _ttoi(buf);
+
+		switch (var_inicio)
+		{
+		case CRIACAOJOGO:chamaCriaJogo();
+			Sleep(500);
+			chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
+			break;
+		case ASSOCIACAOJOGO:
+			if (numJogadores == 1) {
+				chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2);
+			}
+
+			break;
+		case INICIARJOGO:
+			pede_IniciaJogo(pId);
+			esperaPorActualizacaoMapa();
+			getLimitesMapa(&linhas, &colunas);
+			system("cls");
+			hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)interageJogo, NULL, 0, &tid);
+			while (1) {
+				esperaPorActualizacaoMapa();
+				getMapa(mapa);
+				system("cls");
+				imprimeMapa(&aux);
+			}
+		default:
+			break;
+		}
+
+	}
+}
+
+DWORD WINAPI interageJogo(LPVOID param) {
+	TCHAR tecla;
+	BOOLEAN continua = TRUE;
+
+	while (continua) {
+		tecla = _gettch();
+		switch (tecla)
+		{
+		case 'W':
+		case 'w':mudaDirecao(CIMA_JOGADOR1, pId);
+			break;
+		case 'S':
+		case 's':mudaDirecao(BAIXO_JOGADOR1, pId);
+			break;
+		case 'A':
+		case 'a':mudaDirecao(ESQUERDA_JOGADOR1, pId);
+			break;
+		case 'D':
+		case 'd':mudaDirecao(DIREITA_JOGADOR1, pId);
+			break;
+		case 'I':
+		case 'i':mudaDirecao(CIMA_JOGADOR2, pId);
+			break;
+		case 'K':
+		case 'k':mudaDirecao(BAIXO_JOGADOR2, pId);
+			break;
+		case 'J':
+		case 'j':mudaDirecao(ESQUERDA_JOGADOR2, pId);
+			break;
+		case 'L':
+		case 'l':mudaDirecao(DIREITA_JOGADOR2, pId);
+			break;
+		case 'P':
+		case 'p':continua = FALSE;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void chamaCriaJogo(void) {
+	ConfigInicial aux;
+
+	aux.A = NUMAUTOSNAKE;
+	aux.C = COLUNAS;
+	aux.L = LINHAS;
+	aux.N = 1;
+	aux.O = NUMOBJETOS;
+	aux.T = TAMANHOSNAKE;
+
+	pede_CriaJogo(aux, pId);
+}
+
+void chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo) {
+	pede_AssociaJogo(pId, username, codigo);
+	numJogadores++;
+}
+
+void imprimeMapa() {
+	for (int i = 0; i < linhas; i++) {
+		for (int j = 0; j < colunas; j++) {
+			switch (mapa[i][j])
+			{
+			case PAREDE:_tprintf(TEXT("#"));
+				break;
+			case ESPACOVAZIO:_tprintf(TEXT(" "));
+				break;
+			default:_tprintf(TEXT("%d"), mapa[i][j] / 100 - 1);
+				break;
+			}
+		}
+		_tprintf(TEXT("\n"));
+	}
 }
