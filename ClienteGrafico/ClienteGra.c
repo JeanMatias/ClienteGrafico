@@ -64,7 +64,7 @@ LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l);
-
+BOOL CALLBACK Interage_Cliente_G(HWND h, UINT m, WPARAM w, LPARAM l);
 
 TCHAR *szProgName = TEXT("Snake");
 TCHAR executavel[MAX] = TEXT("mspaint.exe");
@@ -364,17 +364,35 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 	case WM_COMMAND:    // Para configuração dos parametros de TABULEIRO
 						// Sem PAI fica não bloqueante, pode ficar NULL ou Handle do Pai para bloquear
-		if (HIWORD(wParam))		
-			DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
+			if (HIWORD(wParam))
+				DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
 		else
-		if (wParam == ID_SERVIDOR_REMOTO )
-			DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
+			if (wParam == ID_SERVIDOR_REMOTO)
+				DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
 		else
-		if (wParam == ID_CONFIGURAR_TABULEIRO)
-				DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
+	/* ************************* */
+			if (wParam == ID_SERVIDOR_LOCAL) {
+			    if (numJogadores == 0) {
+						DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Interage_Cliente_G);						
+						++numJogadores;	}
+				}
 		else
-		if (wParam == ID_CONFIGURAR_OBJECTOS)
-				DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
+			if (wParam == ID_JOGO_ASSOCIAR) {
+				if (numJogadores == 0) {
+					DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Interage_Cliente_G);
+					++numJogadores;	}
+				else 
+					if (numJogadores == 1) {
+						DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Interage_Cliente_G);
+						++numJogadores;	}
+			}
+		else	         
+  /* ************************* */
+			if (wParam == ID_CONFIGURAR_TABULEIRO)
+					DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
+		else
+			if (wParam == ID_CONFIGURAR_OBJECTOS)
+					DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
 		else
 			if (wParam == ID_EDITARJPGS) {
 				if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
@@ -414,10 +432,43 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	return(0);
 }
 
+BOOL CALLBACK Interage_Cliente_G(HWND h, UINT m, WPARAM w, LPARAM l) {
+	TCHAR buf[SIZE_USERNAME];
+	int var_inicio;
+	MemGeral aux;
+	DWORD tid;
+	
+	switch (m) {
+			case WM_COMMAND:
+				switch (LOWORD(w)) {
+						case IDCANCEL:
+							EndDialog(h, 0);
+							return 1;
+						case IDOK:
+							if (numJogadores == 0) {
+								GetDlgItemText(hInstGlobal, IDC_EDIT1, username1, sizeof(IDC_EDIT1));
+								EndDialog(h, 0);
+								return 1;
+							}
+							else {
+								GetDlgItemText(hInstGlobal, IDC_EDIT1, username2, sizeof(IDC_EDIT1));
+								EndDialog(h, 0);
+								return 1;
+							}
+				}
+				return 1;
+			case WM_CLOSE:
+				EndDialog(h, 1);
+				return TRUE;
+			case WN_CANCEL:
+				EndDialog(h, 0);
+				return 1;
+	}	
+}
+
 // ==================================================================================== //
 //		FUNÇÕES CLIENTE CONSOLA                                                         //
 // ==================================================================================== //
-
 
 /*----------------------------------------------------------------- */
 /*  THREAD - Função que escreve mensagens na memoria partilhada 	*/
@@ -437,11 +488,11 @@ DWORD WINAPI Interage_Cliente(LPVOID param) {
 	_tprintf(TEXT("Nome 2: "));
 	fflush(stdin);
 	_fgetts(username2, SIZE_USERNAME, stdin);
-	username1[_tcslen(username2) - 1] = '\0';
+	username2[_tcslen(username2) - 1] = '\0';
 
 	while (1) {
 		system("cls");
-		_tprintf(TEXT("\n\n\t 1 - Criar Jogo. \n\n\t 2 - Associar a Jogo. \n\n\t 12 - Iniciar Jogo. \n\n\t> "));
+		_tprintf(TEXT("\n\n\t 1 - Criar Jogo. \n\n\t 2 - Associar a Jogo. \n\n\t 3 - Iniciar Jogo. \n\n\t> "));
 		fflush(stdin);
 		_fgetts(buf, SIZE_USERNAME, stdin);
 		buf[_tcslen(buf) - 1] = '\0';
@@ -459,7 +510,7 @@ DWORD WINAPI Interage_Cliente(LPVOID param) {
 			}
 
 			break;
-		case INICIARJOGO:
+		case 3:
 			pede_IniciaJogo(pId);
 			esperaPorActualizacaoMapa();
 			getLimitesMapa(&linhas, &colunas);
@@ -487,28 +538,28 @@ DWORD WINAPI interageJogo(LPVOID param) {
 		switch (tecla)
 		{
 		case 'W':
-		case 'w':mudaDirecao(CIMA_JOGADOR1, pId);
+		case 'w':mudaDirecao(CIMA, pId, JOGADOR1);
 			break;
 		case 'S':
-		case 's':mudaDirecao(BAIXO_JOGADOR1, pId);
+		case 's':mudaDirecao(BAIXO, pId, JOGADOR1);
 			break;
 		case 'A':
-		case 'a':mudaDirecao(ESQUERDA_JOGADOR1, pId);
+		case 'a':mudaDirecao(ESQUERDA, pId, JOGADOR1);
 			break;
 		case 'D':
-		case 'd':mudaDirecao(DIREITA_JOGADOR1, pId);
+		case 'd':mudaDirecao(DIREITA, pId, JOGADOR1);
 			break;
 		case 'I':
-		case 'i':mudaDirecao(CIMA_JOGADOR2, pId);
+		case 'i':mudaDirecao(CIMA, pId, JOGADOR2);
 			break;
 		case 'K':
-		case 'k':mudaDirecao(BAIXO_JOGADOR2, pId);
+		case 'k':mudaDirecao(BAIXO, pId, JOGADOR2);
 			break;
 		case 'J':
-		case 'j':mudaDirecao(ESQUERDA_JOGADOR2, pId);
+		case 'j':mudaDirecao(ESQUERDA, pId, JOGADOR2);
 			break;
 		case 'L':
-		case 'l':mudaDirecao(DIREITA_JOGADOR2, pId);
+		case 'l':mudaDirecao(DIREITA, pId, JOGADOR2);
 			break;
 		case 'P':
 		case 'p':continua = FALSE;
@@ -525,7 +576,7 @@ void chamaCriaJogo(void) {
 	aux.A = NUMAUTOSNAKE;
 	aux.C = COLUNAS;
 	aux.L = LINHAS;
-	aux.N = 1;
+	aux.N = 2;
 	aux.O = NUMOBJETOS;
 	aux.T = TAMANHOSNAKE;
 
