@@ -151,11 +151,12 @@
     <ResourceCompile Include="ClienteGrafico.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Debug\SnakeDLL.lib" />
+    <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
+    <Image Include="..\OBJ_Graficos\CobraICON.bmp" />
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
-    <Image Include="icon1.ico" />
+    <Library Include="..\x64\Debug\SnakeDLL.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -30,14 +30,17 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Debug\SnakeDLL.lib" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_1.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\OBJ_Graficos\CobraICON.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\x64\Debug\SnakeDLL.lib" />
   </ItemGroup>
 </Project>

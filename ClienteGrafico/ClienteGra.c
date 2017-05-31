@@ -5,7 +5,6 @@
 
 #include "..\..\SnakeDLL\SnakeDLL\SnakeDLL.h"
 
-
 /* ===================================================== */
 /* Programa base (esqueleto) para aplicações Windows     */
 /* ===================================================== */
@@ -39,6 +38,7 @@ STARTUPINFO si;
 // *************************  HANDLES GLOBAIS ********************
 
 HINSTANCE hInstGlobal;
+HACCEL hAccel;		// Handler da resource accelerators (teclas de atalho
 
 // ============================================================================
 // FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()
@@ -51,11 +51,18 @@ HINSTANCE hInstGlobal;
 //              destinada a conter parâmetros para o programa 
 //   nCmdShow:  Parâmetro que especifica o modo de exibição da janela (usado em  
 //        	   ShowWindow()
+// ============================================================================
+// WinMain()
+// NOTA: Ver declaração de HACCEL, LoadAccelerators() e TranslateAccelerator()
+//		 Estas são as modificações necessárias para tratar as teclas de atalho
+//		 para opções do menu
+// ============================================================================
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
 	HWND hWnd;		// hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
 	MSG lpMsg;		// MSG é uma estrutura definida no Windows para as mensagens
 	WNDCLASSEX wcApp;	// WNDCLASSEX é uma estrutura cujos membros servem para 
 	BOOL ret;			// definir as características da classe da janela
+
 						// ============================================================================
 						// 1. Definição das características da janela "wcApp" 
 						//    (Valores dos elementos da estrutura "wcApp" do tipo WNDCLASSEX)
@@ -68,7 +75,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	wcApp.lpfnWndProc = TrataEventos;	// Endereço da função de processamento da janela 	// ("TrataEventos" foi declarada no início e                 // encontra-se mais abaixo)
 	wcApp.style = CS_HREDRAW | CS_VREDRAW;// Estilo da janela: Fazer o redraw se for      // modificada horizontal ou verticalmente
 										  // CS_VREDRAW
-	wcApp.hIcon = LoadIcon(NULL, IDI_HAND);// "hIcon" = handler do ícon normal
+	//wcApp.hIcon = LoadIcon(NULL, IDI_HAND);// "hIcon" = handler do ícon normal
+	wcApp.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDC_ICON));
 											// Icon Grande		// IDI_APPLICATION		  //"NULL" = Icon definido no Windows
 											// "IDI_AP..." Ícone "aplicação"
 	wcApp.hIconSm = LoadIcon(NULL, IDI_WINLOGO);// "hIconSm" = handler do ícon pequeno   //   
@@ -112,6 +120,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		(HINSTANCE)hInst,		// handle da instância do programa actual ("hInst" é 
 								// passado num dos parâmetros de WinMain()
 		0);				// Não há parâmetros adicionais para a janela
+	// ============================================================================
+	// Carregar as definições das teclas aceleradoras (atalhos de opções dos Menus)
+	// LoadAccelerators(instância_programa, ID_da_resource_atalhos)
+	// ============================================================================
+	hAccel = LoadAccelerators(hInst, (LPCWSTR)IDR_ACCELERATOR1);
 						// ============================================================================
 						// 4. Mostrar a janela
 						// ============================================================================
@@ -143,14 +156,21 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 
 							// ### ALERTA ===>>>>>
 							// ### ESTA CONSTANTEMENTE A RECEBER OS EVENTOS ***************************************************************
-
+	// ============================================================================
+	// Loop de Mensagens
+	// Para usar as teclas aceleradoras do menu é necessário chamar a função
+	// TranslateAccelerator(handler_janela, handler_accelerators, pont_mensagem)
+	// Se esta função devolver falso, não foi premida tecla de aceleração 
+	// ============================================================================
 	while ((ret = GetMessage(&lpMsg, NULL, 0, 0)) != 0) {
 		if (ret != -1) {
-			TranslateMessage(&lpMsg);	// Pré-processamento da mensagem (p.e. obter código 
-										// ASCII da tecla premida)
-			DispatchMessage(&lpMsg);	// Enviar a mensagem traduzida de volta ao Windows, que
-										// aguarda até que a possa reenviar à função de 
-										// tratamento da janela, CALLBACK TrataEventos (abaixo)
+			if (!TranslateAccelerator(hWnd, hAccel, &lpMsg)) {
+				TranslateMessage(&lpMsg);	// Pré-processamento da mensagem (p.e. obter código 
+											// ASCII da tecla premida)
+				DispatchMessage(&lpMsg);	// Enviar a mensagem traduzida de volta ao Windows, que
+											// aguarda até que a possa reenviar à função de 
+											// tratamento da janela, CALLBACK TrataEventos (abaixo)
+			}
 		}
 	}
 	// ============================================================================
@@ -301,7 +321,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 				DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
 		else
 			if (wParam == ID_EDITARJPGS) {
-				if (CreateProcess(NULL, executavel, NULL, NULL, 0, CREATE_NEW, NULL, NULL, &si, &pi))
+				if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
 					return 1;
 				else
 					return 0;
@@ -310,6 +330,16 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		if (wParam == ID_SAIR40011) {
 				if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 					PostQuitMessage(0);
+				break;
+			}
+		else
+			if (wParam == ID_INFORMA40018) {
+				MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
+				break;
+		}
+		else
+			if (wParam == ID_AJUDA_AJUDA) {
+				MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
 				break;
 			}
 
