@@ -5,43 +5,49 @@
 
 #include "..\..\SnakeDLL\SnakeDLL\SnakeDLL.h"
 
-// ============================================================================= //
-//			ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES - CLIENTE CONSOLA          //
-// ============================================================================= //
+// ========================================================== //
+//			ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES         //
+// ========================================================== //
 
 /* ----------------------------------------------------- */
 /*  VARIÁVEIS GLOBAIS									 */
 /* ----------------------------------------------------- */
-HANDLE hThread;
+int tipoServidor=0;//Se está ligado a um servidor local ou remoto
 
-/* ----------------------------------------------------- */
-/*  PROTOTIPOS FUNÇÕES DAS THREADS						 */
-/* ----------------------------------------------------- */
-DWORD WINAPI Interage_Cliente(LPVOID param);
-DWORD WINAPI interageJogo(LPVOID param);
-
+//****Variáveis de configuração do Jogo (começam com o valor por defeito)****
+int cobrasAutomaticas = NUMAUTOSNAKE;
+int colunasConfig = COLUNAS;
+int linhasConfig = LINHAS;
+int numJogadores = NUMJOGADORES;
+int numObjectos = NUMOBJETOS;
+int tamanhoSnakes = TAMANHOSNAKE;
+//****Variáveis de configuração do Jogo****
+int numJogadoresLocal = 0;				//Num Jogadores a jogar nesta maquina
+int valorCobra1 = 0;				//valor da cobra do jogador 1 desta maquina
+int valorCobra2 = 0;				//valor da cobra do jogador 2 desta maquina
+TCHAR username1[SIZE_USERNAME];		//Nome do Jogador 1 desta Maquina
+TCHAR username2[SIZE_USERNAME];		//Nome do Jogador 2 desta Maquina
+int pId;							//Process Id deste cliente
+int linhas;							
+int colunas;
+int mapa[MAX_LINHAS][MAX_COLUNAS];
 
 /* ----------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES									 */
 /* ----------------------------------------------------- */
-void chamaCriaJogo(void);
-void imprimeMapa();
-void chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo);
+int chamaCriaJogo(void);
+int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo);
 
+/* --------------------------------------------------------- */
+/*  PROTOTIPOS FUNÇÕES DE TRATAMENTO DE EVENTOS DE JANELAS	 */
+/* --------------------------------------------------------- */
+BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l);
+BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l);
+BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l);
+BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l);
+BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
 
-/* ----------------------------------------------------- */
-/*  VARIAVEIS GLOBAIS PARA A DLL						 */
-/* ----------------------------------------------------- */
-int numJogadores = 0;				//Num Jogadores a jogar nesta maquina
-int indiceCobras = 0;				//Indice na memoria Dinamica em que se encontram a primeira cobra desta maquina.
-TCHAR username1[SIZE_USERNAME];		//Nome do Jogador 1 desta Maquina
-TCHAR username2[SIZE_USERNAME];		//Nome do Jogador 2 desta Maquina
-int pId;							//Process Id deste cliente
-int linhas;
-int colunas;
-int mapa[MAX_LINHAS][MAX_COLUNAS];
-
-// ========= FIM ZONA DECLARAÇÃO DE VARIAVEIS E FUNÇÕES - CLIENTE CONSOLA ====== //
+// ========= FIM ZONA DECLARAÇÃO DE VARIAVEIS E FUNÇÕES ========= //
 
 /* ===================================================== */
 /* Programa base (esqueleto) para aplicações Windows     */
@@ -59,12 +65,6 @@ LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
 // Nome da classe da janela (para programas de uma só janela, normalmente este nome é 
 // igual ao do próprio programa) "szprogName" é usado mais abaixo na definição das 
 // propriedades do objecto janela
-
-// ************************   DECLARAÇÕES  ************************************
-BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK Interage_Cliente_G(HWND h, UINT m, WPARAM w, LPARAM l);
 
 TCHAR *szProgName = TEXT("Snake");
 TCHAR executavel[MAX] = TEXT("mspaint.exe");
@@ -103,14 +103,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 
 	hInstGlobal = hInst;
 
-	/* ---- DEFINIÇÕES ---- CONSOLA ----- */
-	DWORD tid;
-	TCHAR buffer[TAM_BUFFER];
-	int var_inicio = 0;
-
 	pId = GetCurrentProcessId();
 
-	preparaMemoriaPartilhada();
 
 	/* ---- Definição Pipes ---- */
 
@@ -249,7 +243,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 // WM_DESTROY, WM_CHAR, WM_KEYDOWN, WM_PAINT...) definidas em windows.h ============================================================================
 
 //  **************************************************************************************
-//  *************** FUNÇÕES COOLBACK  ****************************************************
+//  *************** FUNÇÕES CALLBACK  ****************************************************
 //  **************************************************************************************
 
 //  *************** FUNÇÃO MENU PARA IP DO REMOTO ****************************************
@@ -262,14 +256,6 @@ BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l) {
 			EndDialog(h, 0);
 			//return 1;
 		case IDOK:
-			/*GetDlgItemText(h, IDC_EDIT1, login, sizeof(login));
-			GetDlgItemText(h, IDC_EDIT2, password, sizeof(password));
-			SendDlgItemMessage(h, IDC_LIST1, LB_ADDSTRING, 0, (LPARAM)login);
-			if (_tcslen(login) > 0 && _tcslen(password) > 0)
-			MessageBox(h, login, password, MB_OK);
-			else
-			SetDlgItemText(h, IDC_LIST1, TEXT("Introduzir Login/password válido"));
-			return 1;*/
 
 		case WM_INITDIALOG:
 
@@ -295,22 +281,17 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
 			EndDialog(h, 0);
 			//return 1;
 		case IDOK:
-			/*GetDlgItemText(h, IDC_EDIT1, login, sizeof(login));
-			GetDlgItemText(h, IDC_EDIT2, password, sizeof(password));
-			SendDlgItemMessage(h, IDC_LIST1, LB_ADDSTRING, 0, (LPARAM)login);
-			if (_tcslen(login) > 0 && _tcslen(password) > 0)
-				MessageBox(h, login, password, MB_OK);
-			else
-				SetDlgItemText(h, IDC_LIST1, TEXT("Introduzir Login/password válido"));
-			return 1;*/
-
-		case WM_INITDIALOG:
-
-			return 1;
+			break;
 		}
+		break;
 	case WM_CLOSE:
 		EndDialog(h, 0);
 		return 1;
+
+	case WM_INITDIALOG:
+		SetDlgItemInt(h, IDC_EDIT3, tamanhoSnakes, TRUE);
+		return 1;
+		
 	}
 	//Não foi tratado o evento
 	return 0;
@@ -326,35 +307,81 @@ BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
 			EndDialog(h, 0);
 			//return 1;
 		case IDOK:
-			/*GetDlgItemText(h, IDC_EDIT1, login, sizeof(login));
-			GetDlgItemText(h, IDC_EDIT2, password, sizeof(password));
-			SendDlgItemMessage(h, IDC_LIST1, LB_ADDSTRING, 0, (LPARAM)login);
-			if (_tcslen(login) > 0 && _tcslen(password) > 0)
-			MessageBox(h, login, password, MB_OK);
-			else
-			SetDlgItemText(h, IDC_LIST1, TEXT("Introduzir Login/password válido"));
-			return 1;*/
-
-		case WM_INITDIALOG:
-
-			return 1;
+			break;
 		}
+		break;
 	case WM_CLOSE:
 		EndDialog(h, 0);
+		return 1;
+
+	case WM_INITDIALOG:
+
 		return 1;
 	}
 	//Não foi tratado o evento
 	return 0;
 }
-// ****************  FIM DAS FUNÇÕES COOLBACK GERAIS *************************************
 
-//  *************** FUNÇÃO COOLBACK BASE DA APLICAÇÃO / TRATA TECLADO ********************
+//  *************** FUNÇÃO CALLBACK PARA PEDIR NOME JOGADOR 1 **********************************
+BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l) {
+	switch (m) {
+	case WM_COMMAND:
+		switch (LOWORD(w)) {
+		case IDCANCEL:
+			EndDialog(h, 0);
+			return 1;
+		case IDOK:
+			GetDlgItemText(h, IDC_EDIT23, username1, sizeof(IDC_EDIT23));
+			EndDialog(h, 0);
+			return 1;
+		}
+		return 1;
+	case WM_CLOSE:
+		EndDialog(h, 1);
+		return TRUE;
+	case WN_CANCEL:
+		EndDialog(h, 0);
+		return 1;
+	case WM_INITDIALOG:
+		SendDlgItemMessage(h, IDC_EDIT23, EM_LIMITTEXT, SIZE_USERNAME, NULL);
+		return 1;
+	}
+	return 0;
+}
+
+//  *************** FUNÇÃO CALLBACK PARA PEDIR NOME JOGADOR 2 **********************************
+BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
+	switch (m) {
+	case WM_COMMAND:
+		switch (LOWORD(w)) {
+		case IDCANCEL:
+			EndDialog(h, 0);
+			return 1;
+		case IDOK:
+			GetDlgItemText(h, IDC_EDIT24, username2, sizeof(IDC_EDIT24));
+			EndDialog(h, 0);
+			return 1;
+		}
+		return 1;
+	case WM_CLOSE:
+		EndDialog(h, 1);
+		return TRUE;
+	case WN_CANCEL:
+		EndDialog(h, 0);
+		return 1;
+	case WM_INITDIALOG:
+
+		SendDlgItemMessage(h, IDC_EDIT24, EM_LIMITTEXT, SIZE_USERNAME, NULL);
+		return 1;
+	}
+	return 0;
+}
+
+// ****************  FIM DAS FUNÇÕES CALLBACK GERAIS *************************************
+
+//  *************** FUNÇÃO CALLBACK BASE DA APLICAÇÃO / TRATA TECLADO ********************
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	int retorno, x, y;
-	static int xini, yini;
-	int xfin, yfin;
 	HDC device;
-	TCHAR str[100];
 	
 	switch (messg) {
 	case WM_CLOSE:
@@ -364,59 +391,46 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 	case WM_COMMAND:    // Para configuração dos parametros de TABULEIRO
 						// Sem PAI fica não bloqueante, pode ficar NULL ou Handle do Pai para bloquear
-			if (HIWORD(wParam))
-				DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
-		else
-			if (wParam == ID_SERVIDOR_REMOTO)
-				DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
-		else
-	/* ************************* */
-			if (wParam == ID_SERVIDOR_LOCAL) {
-			    if (numJogadores == 0) {
-						DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Interage_Cliente_G);						
-						++numJogadores;	}
+		switch (wParam)
+		{
+		case ID_SERVIDOR_REMOTO:DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
+			break;
+		case ID_SERVIDOR_LOCAL:tipoServidor = LOCAL;
+			preparaMemoriaPartilhada();
+			break;
+		case ID_JOGO_CRIAR:DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
+			chamaCriaJogo();
+			chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
+			break;
+		case ID_JOGO_ASSOCIAR:if (numJogadores == 0) {
+					DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
+					chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
 				}
-		else
-			if (wParam == ID_JOGO_ASSOCIAR) {
-				if (numJogadores == 0) {
-					DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Interage_Cliente_G);
-					++numJogadores;	}
-				else 
-					if (numJogadores == 1) {
-						DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Interage_Cliente_G);
-						++numJogadores;	}
-			}
-		else	         
-  /* ************************* */
-			if (wParam == ID_CONFIGURAR_TABULEIRO)
-					DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
-		else
-			if (wParam == ID_CONFIGURAR_OBJECTOS)
-					DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
-		else
-			if (wParam == ID_EDITARJPGS) {
-				if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
-					return 1;
-				else
-					return 0;
-			}
-		else
-		if (wParam == ID_SAIR40011) {
-				if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-					PostQuitMessage(0);
-				break;
-			}
-		else
-			if (wParam == ID_INFORMA40018) {
-				MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
-				break;
+					else if (numJogadores == 1) {
+						DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
+						chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2);
+					}
+					break;
+		case ID_JOGO_JOGAR:chamaIniciaJogo();
+			break;
+		
+		case ID_CONFIGURAR_TABULEIRO:DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
+			break;
+		case ID_CONFIGURAR_OBJECTOS:DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
+			break;
+		case ID_EDITARJPGS:if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
+								return 1;
+						   else
+								return 0;
+			break;
+		case ID_SAIR40011:if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+			PostQuitMessage(0);
+			break;
+		case ID_INFORMA40018:MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
+			break;
+		case ID_AJUDA_AJUDA:MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
+			break;
 		}
-		else
-			if (wParam == ID_AJUDA_AJUDA) {
-				MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
-				break;
-			}
-
 	case WM_KEYUP:
 
 		break;
@@ -432,175 +446,61 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	return(0);
 }
 
-BOOL CALLBACK Interage_Cliente_G(HWND h, UINT m, WPARAM w, LPARAM l) {
-	TCHAR buf[SIZE_USERNAME];
-	int var_inicio;
-	MemGeral aux;
-	DWORD tid;
-	
-	switch (m) {
-			case WM_COMMAND:
-				switch (LOWORD(w)) {
-						case IDCANCEL:
-							EndDialog(h, 0);
-							return 1;
-						case IDOK:
-							if (numJogadores == 0) {
-								GetDlgItemText(hInstGlobal, IDC_EDIT1, username1, sizeof(IDC_EDIT1));
-								EndDialog(h, 0);
-								return 1;
-							}
-							else {
-								GetDlgItemText(hInstGlobal, IDC_EDIT1, username2, sizeof(IDC_EDIT1));
-								EndDialog(h, 0);
-								return 1;
-							}
-				}
-				return 1;
-			case WM_CLOSE:
-				EndDialog(h, 1);
-				return TRUE;
-			case WN_CANCEL:
-				EndDialog(h, 0);
-				return 1;
-	}	
-}
-
 // ==================================================================================== //
-//		FUNÇÕES CLIENTE CONSOLA                                                         //
+//		FUNÇÕES DE CHAMADA DE FUNÇÔES DE PEDIDOS                                        //
 // ==================================================================================== //
 
-/*----------------------------------------------------------------- */
-/*  THREAD - Função que escreve mensagens na memoria partilhada 	*/
-/* ---------------------------------------------------------------- */
-DWORD WINAPI Interage_Cliente(LPVOID param) {
-
-	TCHAR buf[SIZE_USERNAME];
-	int var_inicio;
-	MemGeral aux;
-	DWORD tid;
-
-	_tprintf(TEXT("Nome 1: "));
-	fflush(stdin);
-	_fgetts(username1, SIZE_USERNAME, stdin);
-	username1[_tcslen(username1) - 1] = '\0';
-
-	_tprintf(TEXT("Nome 2: "));
-	fflush(stdin);
-	_fgetts(username2, SIZE_USERNAME, stdin);
-	username2[_tcslen(username2) - 1] = '\0';
-
-	while (1) {
-		system("cls");
-		_tprintf(TEXT("\n\n\t 1 - Criar Jogo. \n\n\t 2 - Associar a Jogo. \n\n\t 3 - Iniciar Jogo. \n\n\t> "));
-		fflush(stdin);
-		_fgetts(buf, SIZE_USERNAME, stdin);
-		buf[_tcslen(buf) - 1] = '\0';
-		var_inicio = _ttoi(buf);
-
-		switch (var_inicio)
-		{
-		case CRIACAOJOGO:chamaCriaJogo();
-			Sleep(500);
-			chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
-			break;
-		case ASSOCIACAOJOGO:
-			if (numJogadores == 1) {
-				chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2);
-			}
-
-			break;
-		case 3:
-			pede_IniciaJogo(pId);
-			esperaPorActualizacaoMapa();
-			getLimitesMapa(&linhas, &colunas);
-			system("cls");
-			hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)interageJogo, NULL, 0, &tid);
-			while (1) {
-				esperaPorActualizacaoMapa();
-				getMapa(mapa);
-				system("cls");
-				imprimeMapa(&aux);
-			}
-		default:
-			break;
-		}
-
-	}
-}
-
-DWORD WINAPI interageJogo(LPVOID param) {
-	TCHAR tecla;
-	BOOLEAN continua = TRUE;
-
-	while (continua) {
-		tecla = _gettch();
-		switch (tecla)
-		{
-		case 'W':
-		case 'w':mudaDirecao(CIMA, pId, JOGADOR1);
-			break;
-		case 'S':
-		case 's':mudaDirecao(BAIXO, pId, JOGADOR1);
-			break;
-		case 'A':
-		case 'a':mudaDirecao(ESQUERDA, pId, JOGADOR1);
-			break;
-		case 'D':
-		case 'd':mudaDirecao(DIREITA, pId, JOGADOR1);
-			break;
-		case 'I':
-		case 'i':mudaDirecao(CIMA, pId, JOGADOR2);
-			break;
-		case 'K':
-		case 'k':mudaDirecao(BAIXO, pId, JOGADOR2);
-			break;
-		case 'J':
-		case 'j':mudaDirecao(ESQUERDA, pId, JOGADOR2);
-			break;
-		case 'L':
-		case 'l':mudaDirecao(DIREITA, pId, JOGADOR2);
-			break;
-		case 'P':
-		case 'p':continua = FALSE;
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-void chamaCriaJogo(void) {
+int chamaCriaJogo(void) {
 	ConfigInicial aux;
 
-	aux.A = NUMAUTOSNAKE;
-	aux.C = COLUNAS;
-	aux.L = LINHAS;
-	aux.N = 2;
-	aux.O = NUMOBJETOS;
-	aux.T = TAMANHOSNAKE;
+	aux.A = cobrasAutomaticas;
+	aux.C = colunasConfig;
+	aux.L = linhasConfig;
+	aux.N = numJogadores;
+	aux.O = numObjectos;
+	aux.T = tamanhoSnakes;
 
-	pede_CriaJogo(aux, pId);
-}
-
-void chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo) {
-	pede_AssociaJogo(pId, username, codigo);
-	numJogadores++;
-}
-
-void imprimeMapa() {
-	for (int i = 0; i < linhas; i++) {
-		for (int j = 0; j < colunas; j++) {
-			switch (mapa[i][j])
-			{
-			case PAREDE:_tprintf(TEXT("#"));
-				break;
-			case ESPACOVAZIO:_tprintf(TEXT(" "));
-				break;
-			default:_tprintf(TEXT("%d"), mapa[i][j] / 100 - 1);
-				break;
-			}
-		}
-		_tprintf(TEXT("\n"));
+	switch (tipoServidor)
+	{
+	case LOCAL:pede_CriaJogo(aux, pId);
+			//ler Resposta e só depois validar
+		return 1;
+		break;
+	case REMOTO://comunicar por pipes
+		break;
+	default:
+		break;
 	}
 }
+
+int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo) {
+	
+	switch (tipoServidor)
+	{
+	case LOCAL:pede_AssociaJogo(pId, username, codigo);
+			//ler Resposta e só depois validar
+			numJogadores++;
+			return 1;//sucesso
+		break;
+	case REMOTO://comunicar por pipes
+		break;
+	default:
+		break;
+	}
+}
+
+int chamaIniciaJogo(void) {
+
+	switch (tipoServidor)
+	{
+	case LOCAL:pede_IniciaJogo(pId);
+		//ler Resposta e só depois validar
+		return 1;
+		break;
+	case REMOTO://comunicar por pipes
+		break;
+	default:
+		break;
+	}
+}
+
