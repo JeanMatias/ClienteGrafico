@@ -157,10 +157,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	wcApp.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDC_ICON));
 													// Icon Grande		// IDI_APPLICATION		  //"NULL" = Icon definido no Windows
 													// "IDI_AP..." Ícone "aplicação"
-	wcApp.hIconSm = LoadIcon(NULL, IDI_WINLOGO);	// "hIconSm" = handler do ícon pequeno   //   
+	wcApp.hIconSm = LoadIcon(hInst, IDI_ICON4);	// "hIconSm" = handler do ícon pequeno   //   
 													// Icon Small		// IDI_INFORMATION			 //"NULL" = Icon definido no Windows
 													// "IDI_INF..." Ícon de informação
-	wcApp.hCursor = LoadCursor(NULL, IDC_HAND);		// "hCursor" = handler do cursor (rato) 
+	wcApp.hCursor = LoadCursor(NULL, IDC_ARROW);		// "hCursor" = handler do cursor (rato) 
 													// IDC_ARROW				// "NULL" = Forma definida no Windows
 													// "IDC_ARROW" Aspecto "seta" 
 	wcApp.lpszMenuName =(IDR_MENU1);
