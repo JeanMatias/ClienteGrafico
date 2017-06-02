@@ -1,36 +1,63 @@
 #include <windows.h>
 #include <tchar.h>
 #include "resource.h"
-#define MAX 256
-
 #include "..\..\SnakeDLL\SnakeDLL\SnakeDLL.h"
 
-// ========================================================== //
-//			ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES         //
-// ========================================================== //
+
+/* -----------------------------------------------------*/
+/*         #DEFINES LOCAIS                              */
+/* -----------------------------------------------------*/
+#define MAX				256
+#define LIMITE_1POSI	1
+#define LIMITE_2POSI	2
+#define LIMITE_3POSI	3
+
+/* ===================================================== */
+/*		ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES        */
+/* ===================================================== */
 
 /* ----------------------------------------------------- */
 /*  VARIÁVEIS GLOBAIS									 */
 /* ----------------------------------------------------- */
 int tipoServidor=0;//Se está ligado a um servidor local ou remoto
 
-//****Variáveis de configuração do Jogo (começam com o valor por defeito)****
-int cobrasAutomaticas = NUMAUTOSNAKE;
-int colunasConfig = COLUNAS;
-int linhasConfig = LINHAS;
-int numJogadores = NUMJOGADORES;
-int numObjectos = NUMOBJETOS;
-int tamanhoSnakes = TAMANHOSNAKE;
-//****Variáveis de configuração do Jogo****
-int numJogadoresLocal = 0;				//Num Jogadores a jogar nesta maquina
-int valorCobra1 = 0;				//valor da cobra do jogador 1 desta maquina
-int valorCobra2 = 0;				//valor da cobra do jogador 2 desta maquina
-TCHAR username1[SIZE_USERNAME];		//Nome do Jogador 1 desta Maquina
-TCHAR username2[SIZE_USERNAME];		//Nome do Jogador 2 desta Maquina
-int pId;							//Process Id deste cliente
+//**** Variáveis de configuração do Jogo (começam com o valor por defeito)****
+int cobrasAutomaticas	=	NUMAUTOSNAKE;
+int colunasConfig		=	COLUNAS;
+int linhasConfig		=	LINHAS;
+int numJogadores		=	NUMJOGADORES;
+int numObjectos			=	NUMOBJETOS;
+int tamanhoSnakes		=	TAMANHOSNAKE;
+int maxjogadores		=	MAXJOGADORES;
+int minlinhas			=	MIN_LINHAS;
+int mincolunas			=	MIN_COLUNAS;
+int maxlinhas			=	MAX_LINHAS;
+int maxcolunas			=	MAX_COLUNAS;
+int maxobjectos			=	MAXOBJECTOS;
+
+//**** Variáveis de configuração de Objectos
+int alimento			=	ALIMENTO;
+int gelo				=	GELO;
+int granada				=	GRANADA;
+int vodka				=	VODKA;
+int oleo				=	OLEO;
+int cola				=	COLA;
+int o_vodka				=	O_VODKA;
+int o_oleo				=	O_OLEO;
+int o_cola				=	O_COLA;
+int surpresa			=	SURPRESA;
+
+//**** Variáveis de configuração do Jogo ****
+int numJogadoresLocal	=	0;				//Num Jogadores a jogar nesta maquina
+int valorCobra1			=	0;				//valor da cobra do jogador 1 desta maquina
+int valorCobra2			=	0;				//valor da cobra do jogador 2 desta maquina
+TCHAR username1[SIZE_USERNAME];				//Nome do Jogador 1 desta Maquina
+TCHAR username2[SIZE_USERNAME];				//Nome do Jogador 2 desta Maquina
+int pId;									//Process Id deste cliente
 int linhas;							
 int colunas;
 int mapa[MAX_LINHAS][MAX_COLUNAS];
+
 
 /* ----------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES									 */
@@ -52,19 +79,21 @@ BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
 /* ===================================================== */
 /* Programa base (esqueleto) para aplicações Windows     */
 /* ===================================================== */
-// Cria uma janela de nome "Janela Principal" e pinta fundo de branco
-// Modelo para programas Windows:
-//  Composto por 2 funções: 
-//	WinMain()     = Ponto de entrada dos programas windows
-//			1) Define, cria e mostra a janela
-//			2) Loop de recepção de mensagens provenientes do Windows
-//     TrataEventos()= Processamentos da janela (pode ter outro nome)
-//			1) É chamada pelo Windows (callback) 
-//			2) Executa código em função da mensagem recebida
+				// Cria uma janela de nome "Janela Principal" e pinta fundo de branco
+				// Modelo para programas Windows:
+				//  Composto por 2 funções: 
+				//	WinMain()     = Ponto de entrada dos programas windows
+				//			1) Define, cria e mostra a janela
+				//			2) Loop de recepção de mensagens provenientes do Windows
+				//     TrataEventos()= Processamentos da janela (pode ter outro nome)
+				//			1) É chamada pelo Windows (callback) 
+				//			2) Executa código em função da mensagem recebida
+
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
-// Nome da classe da janela (para programas de uma só janela, normalmente este nome é 
-// igual ao do próprio programa) "szprogName" é usado mais abaixo na definição das 
-// propriedades do objecto janela
+
+				// Nome da classe da janela (para programas de uma só janela, normalmente este nome é 
+				// igual ao do próprio programa) "szprogName" é usado mais abaixo na definição das 
+				// propriedades do objecto janela
 
 TCHAR *szProgName = TEXT("Snake");
 TCHAR executavel[MAX] = TEXT("mspaint.exe");
@@ -73,33 +102,36 @@ TCHAR executavel[MAX] = TEXT("mspaint.exe");
 PROCESS_INFORMATION pi;
 STARTUPINFO si;
 
-// *************************  HANDLES GLOBAIS ********************
+/* --------------------------------------------------------- */
+/*                   HANDLES GLOBAIS                         */
+/* --------------------------------------------------------- */
 
 HINSTANCE hInstGlobal;
 
 // ============================================================================
 // FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()
 // ============================================================================
-// Em Windows, o programa começa sempre a sua execução na função WinMain()que desempenha // o papel da função main() do C em modo consola WINAPI indica o "tipo da função" (WINAPI // para todas as declaradas nos headers do Windows e CALLBACK para as funções de        // processamento da janela)
-// Parâmetros:
-//   hInst: Gerado pelo Windows, é o handle (número) da instância deste programa 
-//   hPrevInst: Gerado pelo Windows, é sempre NULL para o NT (era usado no Windows 3.1)
-//   lpCmdLine: Gerado pelo Windows, é um ponteiro para uma string terminada por 0
-//              destinada a conter parâmetros para o programa 
-//   nCmdShow:  Parâmetro que especifica o modo de exibição da janela (usado em  
-//        	   ShowWindow()
-// ============================================================================
-// WinMain()
-// NOTA: Ver declaração de HACCEL, LoadAccelerators() e TranslateAccelerator()
-//		 Estas são as modificações necessárias para tratar as teclas de atalho
-//		 para opções do menu
-// ============================================================================
+				// Em Windows, o programa começa sempre a sua execução na função WinMain()que desempenha // o papel da função main() do C em modo consola WINAPI indica o "tipo da função" (WINAPI // para todas as declaradas nos headers do Windows e CALLBACK para as funções de        // processamento da janela)
+				// Parâmetros:
+				//   hInst: Gerado pelo Windows, é o handle (número) da instância deste programa 
+				//   hPrevInst: Gerado pelo Windows, é sempre NULL para o NT (era usado no Windows 3.1)
+				//   lpCmdLine: Gerado pelo Windows, é um ponteiro para uma string terminada por 0
+				//              destinada a conter parâmetros para o programa 
+				//   nCmdShow:  Parâmetro que especifica o modo de exibição da janela (usado em  
+				//        	   ShowWindow()
+				// ============================================================================
+				// WinMain()
+				// NOTA: Ver declaração de HACCEL, LoadAccelerators() e TranslateAccelerator()
+				//		 Estas são as modificações necessárias para tratar as teclas de atalho
+				//		 para opções do menu
+				// ============================================================================
+
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
-	HWND hWnd;		// hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
-	MSG lpMsg;		// MSG é uma estrutura definida no Windows para as mensagens
-	WNDCLASSEX wcApp;	// WNDCLASSEX é uma estrutura cujos membros servem para 
-	BOOL ret;			// definir as características da classe da janela
-	HACCEL hAccel;		// Handler da resource accelerators (teclas de atalho
+	HWND hWnd;				// hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
+	MSG lpMsg;				// MSG é uma estrutura definida no Windows para as mensagens
+	WNDCLASSEX wcApp;		// WNDCLASSEX é uma estrutura cujos membros servem para 
+	BOOL ret;				// definir as características da classe da janela
+	HACCEL hAccel;			// Handler da resource accelerators (teclas de atalho
 
 	hInstGlobal = hInst;
 
@@ -112,103 +144,113 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 						// 1. Definição das características da janela "wcApp" 
 						//    (Valores dos elementos da estrutura "wcApp" do tipo WNDCLASSEX)
 						// ============================================================================
-	wcApp.cbSize = sizeof(WNDCLASSEX);	// Tamanho da estrutura WNDCLASSEX
-	wcApp.hInstance = hInst;			// Instância da janela actualmente exibida 
-										// ("hInst" é parâmetro de WinMain e vem 
-										// inicializada daí)
-	wcApp.lpszClassName = szProgName;	// Nome da janela (neste caso = nome do programa)
-	wcApp.lpfnWndProc = TrataEventos;	// Endereço da função de processamento da janela 	// ("TrataEventos" foi declarada no início e                 // encontra-se mais abaixo)
-	wcApp.style = CS_HREDRAW | CS_VREDRAW;// Estilo da janela: Fazer o redraw se for      // modificada horizontal ou verticalmente
-										  // CS_VREDRAW
-	//wcApp.hIcon = LoadIcon(NULL, IDI_HAND);// "hIcon" = handler do ícon normal
+
+	wcApp.cbSize = sizeof(WNDCLASSEX);				// Tamanho da estrutura WNDCLASSEX
+	wcApp.hInstance = hInst;						// Instância da janela actualmente exibida 
+													// ("hInst" é parâmetro de WinMain e vem 
+													// inicializada daí)
+	wcApp.lpszClassName = szProgName;				// Nome da janela (neste caso = nome do programa)
+	wcApp.lpfnWndProc = TrataEventos;				// Endereço da função de processamento da janela 	// ("TrataEventos" foi declarada no início e                 // encontra-se mais abaixo)
+	wcApp.style = CS_HREDRAW | CS_VREDRAW;			// Estilo da janela: Fazer o redraw se for      // modificada horizontal ou verticalmente
+													// CS_VREDRAW
+													//wcApp.hIcon = LoadIcon(NULL, IDI_HAND);// "hIcon" = handler do ícon normal
 	wcApp.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDC_ICON));
-											// Icon Grande		// IDI_APPLICATION		  //"NULL" = Icon definido no Windows
-											// "IDI_AP..." Ícone "aplicação"
-	wcApp.hIconSm = LoadIcon(NULL, IDI_WINLOGO);// "hIconSm" = handler do ícon pequeno   //   
-												// Icon Small		// IDI_INFORMATION			 //"NULL" = Icon definido no Windows
-												// "IDI_INF..." Ícon de informação
-	wcApp.hCursor = LoadCursor(NULL, IDC_HAND);	// "hCursor" = handler do cursor (rato) 
-												// IDC_ARROW				// "NULL" = Forma definida no Windows
-												// "IDC_ARROW" Aspecto "seta" 
+													// Icon Grande		// IDI_APPLICATION		  //"NULL" = Icon definido no Windows
+													// "IDI_AP..." Ícone "aplicação"
+	wcApp.hIconSm = LoadIcon(NULL, IDI_WINLOGO);	// "hIconSm" = handler do ícon pequeno   //   
+													// Icon Small		// IDI_INFORMATION			 //"NULL" = Icon definido no Windows
+													// "IDI_INF..." Ícon de informação
+	wcApp.hCursor = LoadCursor(NULL, IDC_HAND);		// "hCursor" = handler do cursor (rato) 
+													// IDC_ARROW				// "NULL" = Forma definida no Windows
+													// "IDC_ARROW" Aspecto "seta" 
 	wcApp.lpszMenuName =(IDR_MENU1);
-	//wcApp.lpszMenuName = NULL;			// Classe do menu que a janela pode ter
-										// (NULL = não tem menu)
-	wcApp.cbClsExtra = 0;				// Livre, para uso particular
-	wcApp.cbWndExtra = 0;				// Livre, para uso particular
+	//wcApp.lpszMenuName = NULL;					// Classe do menu que a janela pode ter
+													// (NULL = não tem menu)
+	wcApp.cbClsExtra = 0;							// Livre, para uso particular
+	wcApp.cbWndExtra = 0;							// Livre, para uso particular
 	wcApp.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
-	// WHITE_BRUSH
-	// "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  // "GetStockObject".Neste caso o fundo será branco
-	// ============================================================================
-	// 2. Registar a classe "wcApp" no Windows
-	// ============================================================================
+													// WHITE_BRUSH
+													// "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  // "GetStockObject".Neste caso o fundo será branco
+	
+	/* ============================================================================*/
+	/*					2. Registar a classe "wcApp" no Windows	                   */
+	/* ============================================================================*/
+	
 	if (!RegisterClassEx(&wcApp))
 		return(0);
-	// ============================================================================
-	// 3. Criar a janela
-	// ============================================================================
-	hWnd = CreateWindow(
-		szProgName,			// Nome da janela (programa) definido acima
-		TEXT("Snake Multiplayer"),// Texto que figura na barra do título
-		// WS_VSCROLL |           // Adicinar Scrool Bar se necessário
-		
-		WS_OVERLAPPEDWINDOW,	// Estilo da janela (WS_OVERLAPPED= normal)
-		CW_USEDEFAULT,
-		//CW_USEDEFAULT,		// Posição x pixels (default=à direita da última)
-		CW_USEDEFAULT,
-		//CW_USEDEFAULT,		// Posição y pixels (default=abaixo da última)
-		800,
-		//CW_USEDEFAULT,		// Largura da janela (em pixels)
-		600,
-		//CW_USEDEFAULT,		// Altura da janela (em pixels)
-		(HWND)HWND_DESKTOP,	// handle da janela pai (se se criar uma a partir de
-							// outra) ou HWND_DESKTOP se a janela for a primeira, 
-							// criada a partir do "desktop"
-		(HMENU)NULL,			// handle do menu da janela (se tiver menu)
-		(HINSTANCE)hInst,		// handle da instância do programa actual ("hInst" é 
-								// passado num dos parâmetros de WinMain()
-		0);				// Não há parâmetros adicionais para a janela
-	// ============================================================================
-	// Carregar as definições das teclas aceleradoras (atalhos de opções dos Menus)
-	// LoadAccelerators(instância_programa, ID_da_resource_atalhos)
-	// ============================================================================
-	hAccel = LoadAccelerators(hInst, (LPCWSTR)IDR_ACCELERATOR1);
-						// ============================================================================
-						// 4. Mostrar a janela
-						// ============================================================================
-	ShowWindow(hWnd, nCmdShow);	// "hWnd"= handler da janela, devolvido por 
-								// "CreateWindow"; "nCmdShow"= modo de exibição (p.e. 
-								// normal/modal); é passado como parâmetro de WinMain()
-	UpdateWindow(hWnd);		// Refrescar a janela (Windows envia à janela uma 
-							// mensagem para pintar, mostrar dados, (refrescar)… 
-							// ============================================================================
-							// 5. Loop de Mensagens
-							// ============================================================================
-							// O Windows envia mensagens às janelas (programas). Estas mensagens ficam numa fila de
-							// espera até que GetMessage(...) possa ler "a mensagem seguinte"	
-							// Parâmetros de "getMessage":
-							// 1)"&lpMsg"=Endereço de uma estrutura do tipo MSG ("MSG lpMsg" ja foi declarada no  
-							//   início de WinMain()):
-							//			HWND hwnd		handler da janela a que se destina a mensagem
-							//			UINT message		Identificador da mensagem
-							//			WPARAM wParam		Parâmetro, p.e. código da tecla premida
-							//			LPARAM lParam		Parâmetro, p.e. se ALT também estava premida
-							//			DWORD time		Hora a que a mensagem foi enviada pelo Windows
-							//			POINT pt		Localização do mouse (x, y) 
-							// 2)handle da window para a qual se pretendem receber mensagens (=NULL se se pretendem //   receber as mensagens para todas as janelas pertencentes à thread actual)
-							// 3)Código limite inferior das mensagens que se pretendem receber
-							// 4)Código limite superior das mensagens que se pretendem receber
 
-							// NOTA: GetMessage() devolve 0 quando for recebida a mensagem de fecho da janela,
-							// 	  terminando então o loop de recepção de mensagens, e o programa 
+	/* ============================================================================*/
+	/*					3. Criar a janela                                          */
+	/* ============================================================================*/
+	
+	hWnd = CreateWindow(
+		szProgName,									// Nome da janela (programa) definido acima
+		TEXT("Snake Multiplayer"),					// Texto que figura na barra do título
+		// WS_VSCROLL |								// Adicinar Scrool Bar se necessário		
+		WS_OVERLAPPEDWINDOW,						// Estilo da janela (WS_OVERLAPPED= normal)
+		CW_USEDEFAULT,								//CW_USEDEFAULT,
+													// Posição x pixels (default=à direita da última)
+		CW_USEDEFAULT,								// Posição y pixels (default=abaixo da última)
+		//CW_USEDEFAULT,		
+		800,										// Largura da janela (em pixels)
+		//CW_USEDEFAULT,		
+		600,										// Altura da janela (em pixels)
+		//CW_USEDEFAULT,		
+		(HWND)HWND_DESKTOP,							// handle da janela pai (se se criar uma a partir de
+													// outra) ou HWND_DESKTOP se a janela for a primeira, 
+													// criada a partir do "desktop"
+		(HMENU)NULL,								// handle do menu da janela (se tiver menu)
+		(HINSTANCE)hInst,							// handle da instância do programa actual ("hInst" é 
+													// passado num dos parâmetros de WinMain()
+		0);											// Não há parâmetros adicionais para a janela
+
+	/* ============================================================================ */
+	/* Carregar as definições das teclas aceleradoras (atalhos de opções dos Menus) */
+	/* LoadAccelerators(instância_programa, ID_da_resource_atalhos)				    */
+	/* ============================================================================ */
+
+	hAccel = LoadAccelerators(hInst, (LPCWSTR)IDR_ACCELERATOR1);
+
+	/* ============================================================================ */
+	/*				4. Mostrar a janela												*/
+	/* ============================================================================ */
+
+	ShowWindow(hWnd, nCmdShow);			// "hWnd"= handler da janela, devolvido por 
+										// "CreateWindow"; "nCmdShow"= modo de exibição (p.e. 
+										// normal/modal); é passado como parâmetro de WinMain()
+			UpdateWindow(hWnd);			// Refrescar a janela (Windows envia à janela uma 
+										// mensagem para pintar, mostrar dados, (refrescar)… 
+										// ============================================================================
+										// 5. Loop de Mensagens
+										// ============================================================================
+										// O Windows envia mensagens às janelas (programas). Estas mensagens ficam numa fila de
+										// espera até que GetMessage(...) possa ler "a mensagem seguinte"	
+										// Parâmetros de "getMessage":
+										// 1)"&lpMsg"=Endereço de uma estrutura do tipo MSG ("MSG lpMsg" ja foi declarada no  
+										//   início de WinMain()):
+										//			HWND hwnd		handler da janela a que se destina a mensagem
+										//			UINT message		Identificador da mensagem
+										//			WPARAM wParam		Parâmetro, p.e. código da tecla premida
+										//			LPARAM lParam		Parâmetro, p.e. se ALT também estava premida
+										//			DWORD time		Hora a que a mensagem foi enviada pelo Windows
+										//			POINT pt		Localização do mouse (x, y) 
+										// 2)handle da window para a qual se pretendem receber mensagens (=NULL se se pretendem //   receber as mensagens para todas as janelas pertencentes à thread actual)
+										// 3)Código limite inferior das mensagens que se pretendem receber
+										// 4)Código limite superior das mensagens que se pretendem receber
+
+										// NOTA: GetMessage() devolve 0 quando for recebida a mensagem de fecho da janela,
+										// 	  terminando então o loop de recepção de mensagens, e o programa 
 
 							// ### ALERTA ===>>>>>
 							// ### ESTA CONSTANTEMENTE A RECEBER OS EVENTOS ***************************************************************
-	// ============================================================================
-	// Loop de Mensagens
-	// Para usar as teclas aceleradoras do menu é necessário chamar a função
-	// TranslateAccelerator(handler_janela, handler_accelerators, pont_mensagem)
-	// Se esta função devolver falso, não foi premida tecla de aceleração 
-	// ============================================================================
+	
+							/* ============================================================================ */
+							/* Loop de Mensagens															*/	
+							/* Para usar as teclas aceleradoras do menu é necessário chamar a função		*/
+							/* TranslateAccelerator(handler_janela, handler_accelerators, pont_mensagem)	*/
+							/* Se esta função devolver falso, não foi premida tecla de aceleração			*/
+							/* ============================================================================ */
+
 	while ((ret = GetMessage(&lpMsg, NULL, 0, 0)) != 0) {
 		if (ret != -1) {
 			if (!TranslateAccelerator(hWnd, hAccel, &lpMsg)) {
@@ -220,33 +262,39 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 			}
 		}
 	}
-	// ============================================================================
-	// 6. Fim do programa
-	// ============================================================================
-	return((int)lpMsg.wParam);	// Retorna sempre o parâmetro wParam da estrutura lpMsg
+
+	/* ============================================================================ */
+	/*						6. Fim do programa										*/
+	/* ============================================================================ */
+
+	return((int)lpMsg.wParam);				// Retorna sempre o parâmetro wParam da estrutura lpMsg
 }
-// ============================================================================
-// FUNÇÃO DE PROCESSAMENTO DA JANELA
-// Esta função pode ter um nome qualquer: Apenas é necesário que na inicialização da     // estrutura "wcApp", feita no início de WinMain(), se identifique essa função. Neste   // caso "wcApp.lpfnWndProc = WndProc"
-//
-// WndProc recebe as mensagens enviadas pelo Windows (depois de lidas e pré-processadas // no loop "while" da função WinMain()
-//
-// Parâmetros:
-//		hWnd	O handler da janela, obtido no CreateWindow()
-//		messg	Ponteiro para a estrutura mensagem (ver estrutura em 5. Loop...
-//		wParam	O parâmetro wParam da estrutura messg (a mensagem)
-//		lParam	O parâmetro lParam desta mesma estrutura
-//
-// NOTA:Estes parâmetros estão aqui acessíveis o que simplifica o acesso aos seus valores
-//
-// A função EndProc é sempre do tipo "switch..." com "cases" que descriminam a mensagem // recebida e a tratar. Estas mensagens são identificadas por constantes (p.e. 
-// WM_DESTROY, WM_CHAR, WM_KEYDOWN, WM_PAINT...) definidas em windows.h ============================================================================
+							// ============================================================================
+							// FUNÇÃO DE PROCESSAMENTO DA JANELA
+							// Esta função pode ter um nome qualquer: Apenas é necesário que na inicialização da     // estrutura "wcApp", feita no início de WinMain(), se identifique essa função. Neste   // caso "wcApp.lpfnWndProc = WndProc"
+							//
+							// WndProc recebe as mensagens enviadas pelo Windows (depois de lidas e pré-processadas // no loop "while" da função WinMain()
+							//
+							// Parâmetros:
+							//		hWnd	O handler da janela, obtido no CreateWindow()
+							//		messg	Ponteiro para a estrutura mensagem (ver estrutura em 5. Loop...
+							//		wParam	O parâmetro wParam da estrutura messg (a mensagem)
+							//		lParam	O parâmetro lParam desta mesma estrutura
+							//
+							// NOTA:Estes parâmetros estão aqui acessíveis o que simplifica o acesso aos seus valores
+							//
+							// A função EndProc é sempre do tipo "switch..." com "cases" que descriminam a mensagem // recebida e a tratar. Estas mensagens são identificadas por constantes (p.e. 
+							// WM_DESTROY, WM_CHAR, WM_KEYDOWN, WM_PAINT...) definidas em windows.h ============================================================================
 
-//  **************************************************************************************
-//  *************** FUNÇÕES CALLBACK  ****************************************************
-//  **************************************************************************************
 
-//  *************** FUNÇÃO MENU PARA IP DO REMOTO ****************************************
+/* ============================================================================ */
+/*					FUNÇÕES CALLBACK											*/
+/* ============================================================================ */
+
+/* ----------------------------------------------------- */
+/*				FUNÇÃO MENU PARA IP DO REMOTO			 */
+/* ----------------------------------------------------- */
+
 BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l) {
 	switch (m) {
 	case WM_COMMAND:
@@ -256,23 +304,27 @@ BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l) {
 			EndDialog(h, 0);
 			//return 1;
 		case IDOK:
-
-		case WM_INITDIALOG:
-
-			return 1;
+			break;
 		}
+		break;
 	case WM_CLOSE:
 		EndDialog(h, 0);
+		return 1;
+
+	case WM_INITDIALOG:
+
 		return 1;
 	}
 	//Não foi tratado o evento
 	return 0;
 }
 
+/* ----------------------------------------------------- */
+/*				FUNÇÃO MENU PARA CONFIGURAR JOGO		 */
+/* ----------------------------------------------------- */
 
-//  *************** FUNÇÃO MENU PARA CONFIGURAR JOGO *************************************
 BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
-
+	int aux1, aux2, aux3, aux4, aux5, aux6;
 	switch (m) {
 	case WM_COMMAND:
 		switch (LOWORD(w))
@@ -281,24 +333,72 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
 			EndDialog(h, 0);
 			//return 1;
 		case IDOK:
+			aux1 = GetDlgItemInt(h, IDC_EDIT1, NULL, TRUE);
+			aux2 = GetDlgItemInt(h, IDC_EDIT2, NULL, TRUE);
+				if (aux1 > MAX_LINHAS || aux1 < MIN_LINHAS || aux2 > MAX_COLUNAS || aux2 < MIN_COLUNAS) {
+					MessageBox(h, TEXT("LINHAS: Máximo 40 E Minimo 10 \n\nCOLUNAS: Máximo 80 E Minimo 10"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					colunasConfig = aux1;
+					linhasConfig = aux2;
+				}
+			aux3 = GetDlgItemInt(h, IDC_EDIT3, NULL, TRUE);
+				if (aux3 > TAMANHOSNAKE)
+					MessageBox(h, TEXT("TAMANHO COBRAS: Máximo 4"), TEXT("ATENÇÂO"), MB_OK);
+				else{
+					tamanhoSnakes = aux3;			
+				}
+			aux4 = GetDlgItemInt(h, IDC_EDIT4, NULL, TRUE);
+				if (aux4 > NUMAUTOSNAKE)
+					MessageBox(h, TEXT("TAMANHO COBRAS AUTOMATIC: Máximo 1"), TEXT("ATENÇÃO"), MB_OK);
+				else {
+					cobrasAutomaticas = aux4;
+				}
+			aux5 = GetDlgItemInt(h, IDC_EDIT5, NULL, TRUE);
+				if (aux5 > MAXOBJECTOS)
+					MessageBox(h, TEXT("Nº OBJECTOS: Máximo 30"), TEXT("ATENÇÃO"), MB_OK);
+				else {
+					numObjectos = aux5;
+				}
+			aux6 = GetDlgItemInt(h, IDC_EDIT6, NULL, TRUE);
+				if (aux6 > MAXJOGADORES)
+					MessageBox(h, TEXT("Nº JOGADORES: Máximo 4"), TEXT("ATENÇÃO"), MB_OK);
+				else {
+					numJogadores = aux6;
+				}
+				//EndDialog(h, 0);
 			break;
 		}
 		break;
 	case WM_CLOSE:
 		EndDialog(h, 0);
 		return 1;
-
 	case WM_INITDIALOG:
-		SetDlgItemInt(h, IDC_EDIT3, tamanhoSnakes, TRUE);
-		return 1;
-		
+		SendDlgItemMessage(h, IDC_EDIT1, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT1, colunasConfig, TRUE);					// Tamanho X do tabuleiro
+		SendDlgItemMessage(h, IDC_EDIT2, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT2, linhasConfig, TRUE);					// Tamanho Y do tabuleiro
+		SendDlgItemMessage(h, IDC_EDIT3, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT3, tamanhoSnakes, TRUE);					// Tamanho das cobras
+		SendDlgItemMessage(h, IDC_EDIT4, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT4, cobrasAutomaticas, TRUE);				// Nº Cobras Automáticas
+		SendDlgItemMessage(h, IDC_EDIT5, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT5, numObjectos, TRUE);						// Nº de objectos
+		SendDlgItemMessage(h, IDC_EDIT6, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT6, maxjogadores, TRUE);					// Nº Max Jogadores
+		return 1;		
 	}
 	//Não foi tratado o evento
 	return 0;
 }
-//  *************** FUNÇÃO MENU PARA CONFIGURAR OBJECTOS **********************************
+
+/* ----------------------------------------------------- */
+/*				FUNÇÃO MENU PARA CONFIGURAR OBJECTOS	 */
+/* ----------------------------------------------------- */
+
 BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
-
+	int aux1, aux2, aux3, aux4, aux5, aux6, aux7, aux8, aux9, aux10;
+	int aux11, aux12, aux13, aux14, aux15, aux16, aux17, aux18;
 	switch (m) {
 	case WM_COMMAND:
 		switch (LOWORD(w))
@@ -306,7 +406,78 @@ BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
 		case IDCANCEL:
 			EndDialog(h, 0);
 			//return 1;
+
 		case IDOK:
+			aux1 = GetDlgItemInt(h, IDC_EDIT13, NULL, TRUE);
+				if (aux1 > ALIMENTO) {
+					MessageBox(h, TEXT("ALIMENTO: Máximo 1"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					alimento = aux1;
+				}
+			aux2 = GetDlgItemInt(h, IDC_EDIT14, NULL, TRUE);
+				if (aux2 > GELO) {
+					MessageBox(h, TEXT("GELO: Máximo 2"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					gelo = aux2;
+				}
+			aux3 = GetDlgItemInt(h, IDC_EDIT15, NULL, TRUE);
+				if (aux3 > GRANADA) {
+					MessageBox(h, TEXT("GRANADA: Máximo 3"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					granada = aux3;
+				}
+			aux4 = GetDlgItemInt(h, IDC_EDIT16, NULL, TRUE);
+				if (aux4 > VODKA) {
+					MessageBox(h, TEXT("VODKA: Máximo 4"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					vodka = aux4;
+				}
+			aux5 = GetDlgItemInt(h, IDC_EDIT17, NULL, TRUE);
+				if (aux5 > OLEO) {
+					MessageBox(h, TEXT("OLEO: Máximo 5"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					oleo = aux5;
+				}
+			aux6 = GetDlgItemInt(h, IDC_EDIT18, NULL, TRUE);
+				if (aux6 > COLA) {
+					MessageBox(h, TEXT("COLA: Máximo 6"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					cola = aux6;
+				}
+			aux7 = GetDlgItemInt(h, IDC_EDIT19, NULL, TRUE);
+				if (aux7 > O_OLEO) {
+					MessageBox(h, TEXT("O_OLEO: Máximo 8"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					o_oleo = aux7;
+				}
+			aux8 = GetDlgItemInt(h, IDC_EDIT20, NULL, TRUE);
+				if (aux8 > O_COLA) {
+					MessageBox(h, TEXT("O_COLA: Máximo 9"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					o_cola = aux8;
+				}
+			aux9 = GetDlgItemInt(h, IDC_EDIT21, NULL, TRUE);
+				if (aux9 > O_VODKA) {
+					MessageBox(h, TEXT("O_VODKA: Máximo 7"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					o_vodka = aux9;
+				}
+			aux10 = GetDlgItemInt(h, IDC_EDIT1, NULL, TRUE);
+				if (aux10 > SURPRESA) {
+					MessageBox(h, TEXT("PAREDE: Máximo 10"), TEXT("ATENÇÂO"), MB_OK);
+				}
+				else {
+					surpresa = aux10;
+				}
 			break;
 		}
 		break;
@@ -315,14 +486,35 @@ BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
 		return 1;
 
 	case WM_INITDIALOG:
-
-		return 1;
+		SendDlgItemMessage(h, IDC_EDIT13, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT13, alimento, TRUE);					// Tamanho ALIMENTO
+		SendDlgItemMessage(h, IDC_EDIT14, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT14, gelo, TRUE);						// Tamanho GELO
+		SendDlgItemMessage(h, IDC_EDIT15, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT15, granada, TRUE);					// Tamanho GRANADA
+		SendDlgItemMessage(h, IDC_EDIT16, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT16, vodka, TRUE);						// Tamanho VODKA
+		SendDlgItemMessage(h, IDC_EDIT17, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT17, oleo, TRUE);						// Tamanho OLEO
+		SendDlgItemMessage(h, IDC_EDIT18, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT18, cola, TRUE);						// Tamanho COLA
+		SendDlgItemMessage(h, IDC_EDIT19, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT19, o_oleo, TRUE);						// Tamanho O_OLEO
+		SendDlgItemMessage(h, IDC_EDIT20, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT20, o_cola, TRUE);						// Tamanho O_COLA
+		SendDlgItemMessage(h, IDC_EDIT21, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT21, o_vodka, TRUE);					// Tamanho O_VODKA
+		SendDlgItemMessage(h, IDC_EDIT1, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT1, surpresa, TRUE);					// Tamanho SURPRESA
 	}
 	//Não foi tratado o evento
 	return 0;
 }
 
-//  *************** FUNÇÃO CALLBACK PARA PEDIR NOME JOGADOR 1 **********************************
+/* ----------------------------------------------------- */
+/*		FUNÇÃO CALLBACK PARA PEDIR NOME JOGADOR 1		 */
+/* ----------------------------------------------------- */
+
 BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l) {
 	switch (m) {
 	case WM_COMMAND:
@@ -349,7 +541,10 @@ BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l) {
 	return 0;
 }
 
-//  *************** FUNÇÃO CALLBACK PARA PEDIR NOME JOGADOR 2 **********************************
+/* ----------------------------------------------------- */
+/*		FUNÇÃO CALLBACK PARA PEDIR NOME JOGADOR 2		 */
+/* ----------------------------------------------------- */
+
 BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
 	switch (m) {
 	case WM_COMMAND:
@@ -370,7 +565,6 @@ BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
 		EndDialog(h, 0);
 		return 1;
 	case WM_INITDIALOG:
-
 		SendDlgItemMessage(h, IDC_EDIT24, EM_LIMITTEXT, SIZE_USERNAME, NULL);
 		return 1;
 	}
@@ -379,7 +573,10 @@ BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
 
 // ****************  FIM DAS FUNÇÕES CALLBACK GERAIS *************************************
 
-//  *************** FUNÇÃO CALLBACK BASE DA APLICAÇÃO / TRATA TECLADO ********************
+/* ----------------------------------------------------- */
+/*	FUNÇÃO CALLBACK BASE DA APLICAÇÃO / TRATA TECLADO    */
+/* ----------------------------------------------------- */
+
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	HDC device;
 	
@@ -401,6 +598,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		case ID_JOGO_CRIAR:DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
 			chamaCriaJogo();
 			chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
+			//EnableMenuItem(hInstGlobal,ID_CONFIGURAR_OBJECTOS, MF_ENABLED);
+			
 			break;
 		case ID_JOGO_ASSOCIAR:if (numJogadores == 0) {
 					DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
@@ -446,9 +645,9 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	return(0);
 }
 
-// ==================================================================================== //
-//		FUNÇÕES DE CHAMADA DE FUNÇÔES DE PEDIDOS                                        //
-// ==================================================================================== //
+/* ----------------------------------------------------- */
+/*	    FUNÇÕES DE CHAMADA DE FUNÇÔES DE PEDIDOS         */
+/* ----------------------------------------------------- */
 
 int chamaCriaJogo(void) {
 	ConfigInicial aux;
