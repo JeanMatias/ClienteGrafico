@@ -19,7 +19,7 @@
 /* ----------------------------------------------------- */
 /*  VARIÁVEIS GLOBAIS									 */
 /* ----------------------------------------------------- */
-int tipoServidor=0;//Se está ligado a um servidor local ou remoto
+int tipoServidor		=	0;			//Se está ligado a um servidor local ou remoto
 
 //**** Variáveis de configuração do Jogo (começam com o valor por defeito)****
 int cobrasAutomaticas	=	NUMAUTOSNAKE;
@@ -35,7 +35,7 @@ int maxlinhas			=	MAX_LINHAS;
 int maxcolunas			=	MAX_COLUNAS;
 int maxobjectos			=	MAXOBJECTOS;
 
-//**** Variáveis de configuração de Objectos
+//**** Variáveis de configuração de Objectos (começam com o tempo de vida por defeito) ****
 int alimento			=	ALIMENTO;
 int gelo				=	GELO;
 int granada				=	GRANADA;
@@ -106,7 +106,9 @@ STARTUPINFO si;
 /*                   HANDLES GLOBAIS                         */
 /* --------------------------------------------------------- */
 
-HINSTANCE hInstGlobal;
+HINSTANCE	hInstGlobal;
+HMENU		hMenu;
+HDC			hdc, auxdc;
 
 // ============================================================================
 // FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()
@@ -127,10 +129,12 @@ HINSTANCE hInstGlobal;
 				// ============================================================================
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
+
 	HWND hWnd;				// hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
 	MSG lpMsg;				// MSG é uma estrutura definida no Windows para as mensagens
 	WNDCLASSEX wcApp;		// WNDCLASSEX é uma estrutura cujos membros servem para 
-	BOOL ret;				// definir as características da classe da janela
+							// definir as características da classe da janela
+	BOOL ret;
 	HACCEL hAccel;			// Handler da resource accelerators (teclas de atalho
 
 	hInstGlobal = hInst;
@@ -157,13 +161,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	wcApp.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDC_ICON));
 													// Icon Grande		// IDI_APPLICATION		  //"NULL" = Icon definido no Windows
 													// "IDI_AP..." Ícone "aplicação"
-	wcApp.hIconSm = LoadIcon(hInst, IDI_ICON4);	// "hIconSm" = handler do ícon pequeno   //   
+	wcApp.hIconSm = LoadIcon(hInst, IDI_ICON4);		// "hIconSm" = handler do ícon pequeno   //   
 													// Icon Small		// IDI_INFORMATION			 //"NULL" = Icon definido no Windows
 													// "IDI_INF..." Ícon de informação
 	wcApp.hCursor = LoadCursor(NULL, IDC_ARROW);		// "hCursor" = handler do cursor (rato) 
 													// IDC_ARROW				// "NULL" = Forma definida no Windows
 													// "IDC_ARROW" Aspecto "seta" 
-	wcApp.lpszMenuName =(IDR_MENU1);
+	wcApp.lpszMenuName = (LPCTSTR)(IDR_MENU1);
 	//wcApp.lpszMenuName = NULL;					// Classe do menu que a janela pode ter
 													// (NULL = não tem menu)
 	wcApp.cbClsExtra = 0;							// Livre, para uso particular
@@ -188,9 +192,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		TEXT("Snake Multiplayer"),					// Texto que figura na barra do título
 		// WS_VSCROLL |								// Adicinar Scrool Bar se necessário		
 		WS_OVERLAPPEDWINDOW,						// Estilo da janela (WS_OVERLAPPED= normal)
-		CW_USEDEFAULT,								//CW_USEDEFAULT,
+		50,								//CW_USEDEFAULT,
 													// Posição x pixels (default=à direita da última)
-		CW_USEDEFAULT,								// Posição y pixels (default=abaixo da última)
+		50,								// Posição y pixels (default=abaixo da última)
 		//CW_USEDEFAULT,		
 		800,										// Largura da janela (em pixels)
 		//CW_USEDEFAULT,		
@@ -199,7 +203,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		(HWND)HWND_DESKTOP,							// handle da janela pai (se se criar uma a partir de
 													// outra) ou HWND_DESKTOP se a janela for a primeira, 
 													// criada a partir do "desktop"
-		(HMENU)NULL,								// handle do menu da janela (se tiver menu)
+		(HMENU)hMenu,								// handle do menu da janela (se tiver menu)
 		(HINSTANCE)hInst,							// handle da instância do programa actual ("hInst" é 
 													// passado num dos parâmetros de WinMain()
 		0);											// Não há parâmetros adicionais para a janela
@@ -304,6 +308,7 @@ BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l) {
 			EndDialog(h, 0);
 			//return 1;
 		case IDOK:
+			
 			break;
 		}
 		break;
@@ -312,7 +317,7 @@ BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l) {
 		return 1;
 
 	case WM_INITDIALOG:
-
+	
 		return 1;
 	}
 	//Não foi tratado o evento
@@ -343,26 +348,26 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
 					linhasConfig = aux2;
 				}
 			aux3 = GetDlgItemInt(h, IDC_EDIT3, NULL, TRUE);
-				if (aux3 > TAMANHOSNAKE)
-					MessageBox(h, TEXT("TAMANHO COBRAS: Máximo 4"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux3 < TAMANHOSNAKE || aux3 > 6)
+					MessageBox(h, TEXT("Tamanho Configurável das Cobras: Compreendido entre 3 e 6"), TEXT("ATENÇÂO"), MB_OK);
 				else{
 					tamanhoSnakes = aux3;			
 				}
 			aux4 = GetDlgItemInt(h, IDC_EDIT4, NULL, TRUE);
-				if (aux4 > NUMAUTOSNAKE)
-					MessageBox(h, TEXT("TAMANHO COBRAS AUTOMATIC: Máximo 1"), TEXT("ATENÇÃO"), MB_OK);
+				if (aux4 < NUMAUTOSNAKE || aux4 > 6)
+					MessageBox(h, TEXT("Número Cobras Automáticas: Compreendido entre 1 e 6"), TEXT("ATENÇÃO"), MB_OK);
 				else {
 					cobrasAutomaticas = aux4;
 				}
 			aux5 = GetDlgItemInt(h, IDC_EDIT5, NULL, TRUE);
 				if (aux5 > MAXOBJECTOS)
-					MessageBox(h, TEXT("Nº OBJECTOS: Máximo 30"), TEXT("ATENÇÃO"), MB_OK);
+					MessageBox(h, TEXT("Número Máximo de Objectos: Limite é 30"), TEXT("ATENÇÃO"), MB_OK);
 				else {
 					numObjectos = aux5;
 				}
 			aux6 = GetDlgItemInt(h, IDC_EDIT6, NULL, TRUE);
-				if (aux6 > MAXJOGADORES)
-					MessageBox(h, TEXT("Nº JOGADORES: Máximo 4"), TEXT("ATENÇÃO"), MB_OK);
+				if (aux6 < NUMJOGADORES || aux6 > MAXJOGADORES)
+					MessageBox(h, TEXT("Número de Jogadores: Compreendido entre 1 e 4"), TEXT("ATENÇÃO"), MB_OK);
 				else {
 					numJogadores = aux6;
 				}
@@ -375,17 +380,17 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
 		return 1;
 	case WM_INITDIALOG:
 		SendDlgItemMessage(h, IDC_EDIT1, EM_LIMITTEXT, LIMITE_2POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT1, colunasConfig, TRUE);					// Tamanho X do tabuleiro
-		SendDlgItemMessage(h, IDC_EDIT2, EM_LIMITTEXT, LIMITE_2POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT2, linhasConfig, TRUE);					// Tamanho Y do tabuleiro
+			SetDlgItemInt(h, IDC_EDIT1, LINHAS, TRUE);							// Tamanho X do tabuleiro
+		SendDlgItemMessage(h, IDC_EDIT2, EM_LIMITTEXT, LIMITE_2POSI, NULL);	
+			SetDlgItemInt(h, IDC_EDIT2, COLUNAS, TRUE);							// Tamanho Y do tabuleiro
 		SendDlgItemMessage(h, IDC_EDIT3, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT3, tamanhoSnakes, TRUE);					// Tamanho das cobras
+			SetDlgItemInt(h, IDC_EDIT3, TAMANHOSNAKE, TRUE);					// Tamanho das cobras
 		SendDlgItemMessage(h, IDC_EDIT4, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT4, cobrasAutomaticas, TRUE);				// Nº Cobras Automáticas
+			SetDlgItemInt(h, IDC_EDIT4, NUMAUTOSNAKE, TRUE);					// Nº Cobras Automáticas
 		SendDlgItemMessage(h, IDC_EDIT5, EM_LIMITTEXT, LIMITE_2POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT5, numObjectos, TRUE);						// Nº de objectos
+			SetDlgItemInt(h, IDC_EDIT5, NUMOBJETOS, TRUE);						// Nº de objectos
 		SendDlgItemMessage(h, IDC_EDIT6, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT6, maxjogadores, TRUE);					// Nº Max Jogadores
+			SetDlgItemInt(h, IDC_EDIT6, NUMJOGADORES, TRUE);					// Nº Max Jogadores
 		return 1;		
 	}
 	//Não foi tratado o evento
@@ -397,8 +402,7 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
 /* ----------------------------------------------------- */
 
 BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
-	int aux1, aux2, aux3, aux4, aux5, aux6, aux7, aux8, aux9, aux10;
-	int aux11, aux12, aux13, aux14, aux15, aux16, aux17, aux18;
+	int aux4, aux5, aux6, aux7, aux8, aux9, aux10;
 	switch (m) {
 	case WM_COMMAND:
 		switch (LOWORD(w))
@@ -408,72 +412,51 @@ BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
 			//return 1;
 
 		case IDOK:
-			aux1 = GetDlgItemInt(h, IDC_EDIT13, NULL, TRUE);
-				if (aux1 > ALIMENTO) {
-					MessageBox(h, TEXT("ALIMENTO: Máximo 1"), TEXT("ATENÇÂO"), MB_OK);
-				}
-				else {
-					alimento = aux1;
-				}
-			aux2 = GetDlgItemInt(h, IDC_EDIT14, NULL, TRUE);
-				if (aux2 > GELO) {
-					MessageBox(h, TEXT("GELO: Máximo 2"), TEXT("ATENÇÂO"), MB_OK);
-				}
-				else {
-					gelo = aux2;
-				}
-			aux3 = GetDlgItemInt(h, IDC_EDIT15, NULL, TRUE);
-				if (aux3 > GRANADA) {
-					MessageBox(h, TEXT("GRANADA: Máximo 3"), TEXT("ATENÇÂO"), MB_OK);
-				}
-				else {
-					granada = aux3;
-				}
 			aux4 = GetDlgItemInt(h, IDC_EDIT16, NULL, TRUE);
-				if (aux4 > VODKA) {
-					MessageBox(h, TEXT("VODKA: Máximo 4"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux4 < VODKA || aux4 > 30) {
+					MessageBox(h, TEXT("VODKA: Compreendido entre 4 e 30"), TEXT("ATENÇÂO"), MB_OK);
 				}
 				else {
 					vodka = aux4;
 				}
 			aux5 = GetDlgItemInt(h, IDC_EDIT17, NULL, TRUE);
-				if (aux5 > OLEO) {
-					MessageBox(h, TEXT("OLEO: Máximo 5"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux5 < OLEO || aux5 > 30) {
+					MessageBox(h, TEXT("OLEO: Compreendido entre 5 e 30"), TEXT("ATENÇÂO"), MB_OK);
 				}
 				else {
 					oleo = aux5;
 				}
 			aux6 = GetDlgItemInt(h, IDC_EDIT18, NULL, TRUE);
-				if (aux6 > COLA) {
-					MessageBox(h, TEXT("COLA: Máximo 6"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux6 < COLA || aux6 > 30) {
+					MessageBox(h, TEXT("COLA: Compreendido entre 6 e 30"), TEXT("ATENÇÂO"), MB_OK);
 				}
 				else {
 					cola = aux6;
 				}
 			aux7 = GetDlgItemInt(h, IDC_EDIT19, NULL, TRUE);
-				if (aux7 > O_OLEO) {
-					MessageBox(h, TEXT("O_OLEO: Máximo 8"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux7 < O_OLEO || aux7 > 30) {
+					MessageBox(h, TEXT("O_OLEO: Compreendido entre 8 e 30"), TEXT("ATENÇÂO"), MB_OK);
 				}
 				else {
 					o_oleo = aux7;
 				}
 			aux8 = GetDlgItemInt(h, IDC_EDIT20, NULL, TRUE);
-				if (aux8 > O_COLA) {
-					MessageBox(h, TEXT("O_COLA: Máximo 9"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux8 < O_COLA || aux8 > 30) {
+					MessageBox(h, TEXT("O_COLA: Compreendido entre 9 e 30"), TEXT("ATENÇÂO"), MB_OK);
 				}
 				else {
 					o_cola = aux8;
 				}
 			aux9 = GetDlgItemInt(h, IDC_EDIT21, NULL, TRUE);
-				if (aux9 > O_VODKA) {
-					MessageBox(h, TEXT("O_VODKA: Máximo 7"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux9 < O_VODKA || aux9 > 30) {
+					MessageBox(h, TEXT("O_VODKA: Compreendido entre 7 e 30"), TEXT("ATENÇÂO"), MB_OK);
 				}
 				else {
 					o_vodka = aux9;
 				}
 			aux10 = GetDlgItemInt(h, IDC_EDIT1, NULL, TRUE);
-				if (aux10 > SURPRESA) {
-					MessageBox(h, TEXT("PAREDE: Máximo 10"), TEXT("ATENÇÂO"), MB_OK);
+				if (aux10 < SURPRESA || aux10 > 30) {
+					MessageBox(h, TEXT("SURPRESA: Compreendido entre 10 e 30"), TEXT("ATENÇÂO"), MB_OK);
 				}
 				else {
 					surpresa = aux10;
@@ -486,26 +469,20 @@ BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
 		return 1;
 
 	case WM_INITDIALOG:
-		SendDlgItemMessage(h, IDC_EDIT13, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT13, alimento, TRUE);					// Tamanho ALIMENTO
-		SendDlgItemMessage(h, IDC_EDIT14, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT14, gelo, TRUE);						// Tamanho GELO
-		SendDlgItemMessage(h, IDC_EDIT15, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT15, granada, TRUE);					// Tamanho GRANADA
-		SendDlgItemMessage(h, IDC_EDIT16, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT16, vodka, TRUE);						// Tamanho VODKA
-		SendDlgItemMessage(h, IDC_EDIT17, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT17, oleo, TRUE);						// Tamanho OLEO
-		SendDlgItemMessage(h, IDC_EDIT18, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT18, cola, TRUE);						// Tamanho COLA
-		SendDlgItemMessage(h, IDC_EDIT19, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT19, o_oleo, TRUE);						// Tamanho O_OLEO
-		SendDlgItemMessage(h, IDC_EDIT20, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT20, o_cola, TRUE);						// Tamanho O_COLA
-		SendDlgItemMessage(h, IDC_EDIT21, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT21, o_vodka, TRUE);					// Tamanho O_VODKA
+		SendDlgItemMessage(h, IDC_EDIT16, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT16, vodka, TRUE);						// Tempo vida VODKA
+		SendDlgItemMessage(h, IDC_EDIT17, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT17, oleo, TRUE);						// Tempo vida OLEO
+		SendDlgItemMessage(h, IDC_EDIT18, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT18, cola, TRUE);						// Tempo vida COLA
+		SendDlgItemMessage(h, IDC_EDIT19, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT19, o_oleo, TRUE);						// Tempo vida O_OLEO
+		SendDlgItemMessage(h, IDC_EDIT20, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT20, o_cola, TRUE);						// Tempo vida O_COLA
+		SendDlgItemMessage(h, IDC_EDIT21, EM_LIMITTEXT, LIMITE_2POSI, NULL);
+			SetDlgItemInt(h, IDC_EDIT21, o_vodka, TRUE);					// Tempo vida O_VODKA
 		SendDlgItemMessage(h, IDC_EDIT1, EM_LIMITTEXT, LIMITE_2POSI, NULL);
-			SetDlgItemInt(h, IDC_EDIT1, surpresa, TRUE);					// Tamanho SURPRESA
+			SetDlgItemInt(h, IDC_EDIT1, surpresa, TRUE);					// Tempo vida SURPRESA
 	}
 	//Não foi tratado o evento
 	return 0;
@@ -579,67 +556,109 @@ BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
 
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	HDC device;
-	
+	hMenu = GetMenu(hWnd);							// Para obter o Handle do Menu
+	PAINTSTRUCT pintar;
+	RECT area;
+	static HPEN linha;
+	static HBITMAP vodka, mouse, glue, comida;
+	static HBITMAP cobra1cab1, parede;
+	static HBRUSH fundo, fundo1, fundo2;
+
 	switch (messg) {
-	case WM_CLOSE:
-		if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-			PostQuitMessage(0);
-		break;
+		case WM_CREATE:
+									cobra1cab1	=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_PNG7));
+									parede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_PNG4));
 
-	case WM_COMMAND:    // Para configuração dos parametros de TABULEIRO
-						// Sem PAI fica não bloqueante, pode ficar NULL ou Handle do Pai para bloquear
-		switch (wParam)
-		{
-		case ID_SERVIDOR_REMOTO:DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
-			break;
-		case ID_SERVIDOR_LOCAL:tipoServidor = LOCAL;
-			preparaMemoriaPartilhada();
-			break;
-		case ID_JOGO_CRIAR:DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-			chamaCriaJogo();
-			chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
-			//EnableMenuItem(hInstGlobal,ID_CONFIGURAR_OBJECTOS, MF_ENABLED);
+						break;
+		case WM_CLOSE:				if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+									PostQuitMessage(0);
+						break;
+
+		case WM_COMMAND:			// Para configuração dos parametros de TABULEIRO
+									// Sem PAI fica não bloqueante, pode ficar NULL ou Handle do Pai para bloquear
+			switch (wParam)
+					{
+					case ID_SERVIDOR_REMOTO:	DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
+												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+									break;
+					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
+												preparaMemoriaPartilhada();
+												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+									break;
+					case ID_JOGO_CRIAR:			DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
+												chamaCriaJogo();
+												chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
+									break;
+					case ID_JOGO_ASSOCIAR:		if (numJogadores == 0) {
+												DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
+												chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
+													}
+												else if (numJogadores == 1) {
+													DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
+													chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2);
+												}
+									break;
+					case ID_JOGO_JOGAR:			chamaIniciaJogo();
+						
+									break;		
+					case ID_CONFIGURAR_TABULEIRO:	DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
 			
-			break;
-		case ID_JOGO_ASSOCIAR:if (numJogadores == 0) {
-					DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-					chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
-				}
-					else if (numJogadores == 1) {
-						DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
-						chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2);
+									break;
+					case ID_CONFIGURAR_OBJECTOS:	DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
+			
+									break;
+					case ID_EDITARJPGS:			if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
+														return 1;
+												   else
+														return 0;
+									break;
+					case ID_SAIR40011:			if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+												PostQuitMessage(0);
+									break;
+					case ID_INFORMA40018:		MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
+			
+									break;
+					case ID_AJUDA_AJUDA:		MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
+			
+									break;
 					}
-					break;
-		case ID_JOGO_JOGAR:chamaIniciaJogo();
-			break;
-		
-		case ID_CONFIGURAR_TABULEIRO:DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
-			break;
-		case ID_CONFIGURAR_OBJECTOS:DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
-			break;
-		case ID_EDITARJPGS:if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
-								return 1;
-						   else
-								return 0;
-			break;
-		case ID_SAIR40011:if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-			PostQuitMessage(0);
-			break;
-		case ID_INFORMA40018:MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
-			break;
-		case ID_AJUDA_AJUDA:MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
-			break;
-		}
-	case WM_KEYUP:
+		case WM_PAINT:
+				hdc = BeginPaint(hWnd, &pintar);
 
-		break;
-		// TRATANDO O WM_CLOSE não é necessário tartar o WM_DESTROY  <<============  NOTA
-		//case WM_DESTROY:	// Destruir a janela e terminar o programa 
-		//					// "PostQuitMessage(Exit Status)"	
-		//		PostQuitMessage(0);
-		//	break;
-	default:
-		// Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar") // não é efectuado nenhum processamento, apenas se segue o "default" do Windows			
+				auxdc = CreateCompatibleDC(hdc);
+
+				//  Parede
+				SelectObject(auxdc, parede);
+				for (int i = 0; i < 20; i++)
+					for (int j = 0; j < 20; j++)
+					BitBlt(hdc, j * 20, i * 20, 28, 28, auxdc, 0, 0, SRCCOPY);
+
+				SelectObject(auxdc, cobra1cab1);
+				for (int i = 0; i < 20; i++)
+					for (int j = 0; j < 20; j++)
+						BitBlt(hdc, j * 20, i * 20, 28, 28, auxdc, 0, 0, SRCCOPY);
+
+				//ReleaseDC(hWnd, hdc);
+				//InvalidateRect(hWnd, NULL, 1);
+
+				DeleteDC(auxdc);
+				EndPaint(hWnd, hdc);
+				EndPaint(hWnd, &pintar);
+				break;
+		case WM_KEYUP:
+
+				break;
+						// TRATANDO O WM_CLOSE não é necessário tartar o WM_DESTROY  <<============  NOTA
+						//case WM_DESTROY:	// Destruir a janela e terminar o programa 
+						//					// "PostQuitMessage(Exit Status)"	
+						//		PostQuitMessage(0);
+						//	break;
+		default:
+						// Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar") // não é efectuado nenhum processamento, apenas se segue o "default" do Windows			
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
 	}
 	return(0);

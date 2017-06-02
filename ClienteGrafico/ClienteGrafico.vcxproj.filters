@@ -33,19 +33,34 @@
     <Image Include="icon1.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\OBJ_Graficos\Snake-icon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_1.png">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\Snake-icon.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="icon2.ico">
+    <Image Include="..\OBJ_Graficos\Comida.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Vodka.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Parede.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Glue.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Mouse.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

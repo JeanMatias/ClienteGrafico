@@ -153,10 +153,15 @@
   <ItemGroup>
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1.png" />
+    <Image Include="..\OBJ_Graficos\Comida.png" />
+    <Image Include="..\OBJ_Graficos\Glue.png" />
+    <Image Include="..\OBJ_Graficos\Mouse.png" />
+    <Image Include="..\OBJ_Graficos\Parede.bmp" />
     <Image Include="..\OBJ_Graficos\Snake-icon.ico" />
     <Image Include="..\OBJ_Graficos\Snake-icon.png" />
+    <Image Include="..\OBJ_Graficos\Vodka.png" />
     <Image Include="icon1.ico" />
-    <Image Include="icon2.ico" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\x64\Debug\SnakeDLL.lib" />
