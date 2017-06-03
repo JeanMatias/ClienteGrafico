@@ -63,6 +63,36 @@
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cola.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\x64\Debug\SnakeDLL.lib" />

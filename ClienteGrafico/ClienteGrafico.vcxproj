@@ -154,6 +154,16 @@
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1.png" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo.png" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.png" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.png" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.png" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2.png" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo.png" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo1.png" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo2.png" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo3.png" />
+    <Image Include="..\OBJ_Graficos\Cola.png" />
     <Image Include="..\OBJ_Graficos\Comida.png" />
     <Image Include="..\OBJ_Graficos\Glue.png" />
     <Image Include="..\OBJ_Graficos\Mouse.png" />
