@@ -62,8 +62,8 @@ int mapa[MAX_LINHAS][MAX_COLUNAS];
 /* ----------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES									 */
 /* ----------------------------------------------------- */
-int chamaCriaJogo(void);
-int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo);
+int chamaCriaJogo(int *valor);
+int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor);
 
 /* --------------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES DE TRATAMENTO DE EVENTOS DE JANELAS	 */
@@ -563,6 +563,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	static HBITMAP vodka, mouse, glue, comida;
 	static HBITMAP cobra1cab1, parede;
 	static HBRUSH fundo, fundo1, fundo2;
+	int resposta, valor;
 
 	switch (messg) {
 		case WM_CREATE:
@@ -585,25 +586,79 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 									break;
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
 												preparaMemoriaPartilhada();
-												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+												pede_RegistarClienteLocal(pId);
+												preparaMemoriaPartilhadaResposta(pId);
+												WaitForSingleObject(hEventoResposta, INFINITE);
+												ResetEvent(hEventoResposta);
+												if (vistaResposta->resposta == SUCESSO) {
+													MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);
+													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+												}
+												else if (vistaResposta->resposta == INSUCESSO) {
+													MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
+												}
+												
 									break;
 					case ID_JOGO_CRIAR:			DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-												chamaCriaJogo();
-												chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
-									break;
-					case ID_JOGO_ASSOCIAR:		if (numJogadores == 0) {
-												DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-												chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1);
-													}
-												else if (numJogadores == 1) {
-													DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
-													chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2);
+												resposta = chamaCriaJogo(&valor);
+												if (resposta == SUCESSO) {
+													MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
+													valorCobra1 = valor;
+												}
+												else if (resposta == INSUCESSO) {
+													MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
 												}
 									break;
-					case ID_JOGO_JOGAR:			chamaIniciaJogo();
-						
+					case ID_JOGO_ASSOCIAR:		if (numJogadoresLocal == 0) {
+													DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
+													resposta = 	chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1,&valor);
+													if (resposta == SUCESSO) {
+														MessageBox(hWnd, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
+														valorCobra1 = valor;
+														numJogadoresLocal++;
+													}
+													else if (resposta == INSUCESSO) {
+														if (valor == AGORANAO) {
+															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+														}
+														else if (valor == JOGOCHEIO) {
+															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+														}
+														
+													}
+												}
+												else if (numJogadoresLocal == 1) {
+													DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
+													resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
+													if (resposta == SUCESSO) {
+														MessageBox(hWnd, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
+														valorCobra2 = valor;
+														numJogadoresLocal++;
+													}
+													else if (resposta == INSUCESSO) {
+														if (valor == AGORANAO) {
+															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+														}
+														else if (valor == JOGOCHEIO) {
+															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+														}
+													}
+												}
+									break;
+					case ID_JOGO_JOGAR:			resposta = chamaIniciaJogo(&valor);
+												if (resposta == SUCESSO) {
+													MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
+												}
+												else if (resposta == INSUCESSO) {
+													if (valor == CRIADORERRADO) {
+														MessageBox(hWnd, TEXT("Apenas o cliente que criou o jogo pode iniciar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+													}
+													if (valor == AGORANAO) {
+														MessageBox(hWnd, TEXT("Deve iniciar o jogo só depois de criar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+													}
+												}						
 									break;		
 					case ID_CONFIGURAR_TABULEIRO:	DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
 			
@@ -626,7 +681,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 			
 									break;
 					}
-		case WM_PAINT:
+		/*case WM_PAINT:
 				hdc = BeginPaint(hWnd, &pintar);
 
 				auxdc = CreateCompatibleDC(hdc);
@@ -648,7 +703,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 				DeleteDC(auxdc);
 				EndPaint(hWnd, hdc);
 				EndPaint(hWnd, &pintar);
-				break;
+				break;*/
 		case WM_KEYUP:
 
 				break;
@@ -668,7 +723,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 /*	    FUNÇÕES DE CHAMADA DE FUNÇÔES DE PEDIDOS         */
 /* ----------------------------------------------------- */
 
-int chamaCriaJogo(void) {
+int chamaCriaJogo(int *valor) {
 	ConfigInicial aux;
 
 	aux.A = cobrasAutomaticas;
@@ -680,9 +735,12 @@ int chamaCriaJogo(void) {
 
 	switch (tipoServidor)
 	{
-	case LOCAL:pede_CriaJogo(aux, pId);
+	case LOCAL:pede_CriaJogo(aux, pId, username1);
 			//ler Resposta e só depois validar
-		return 1;
+		WaitForSingleObject(hEventoResposta, INFINITE);
+		ResetEvent(hEventoResposta);
+		*valor = vistaResposta->valor;
+		return vistaResposta->resposta;
 		break;
 	case REMOTO://comunicar por pipes
 		break;
@@ -691,14 +749,16 @@ int chamaCriaJogo(void) {
 	}
 }
 
-int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo) {
+int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor) {
 	
 	switch (tipoServidor)
 	{
 	case LOCAL:pede_AssociaJogo(pId, username, codigo);
 			//ler Resposta e só depois validar
-			numJogadores++;
-			return 1;//sucesso
+			WaitForSingleObject(hEventoResposta, INFINITE);
+			ResetEvent(hEventoResposta);
+			*valor = vistaResposta->valor;
+			return vistaResposta->resposta;
 		break;
 	case REMOTO://comunicar por pipes
 		break;
@@ -707,13 +767,16 @@ int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo) {
 	}
 }
 
-int chamaIniciaJogo(void) {
+int chamaIniciaJogo(int *valor) {
 
 	switch (tipoServidor)
 	{
 	case LOCAL:pede_IniciaJogo(pId);
 		//ler Resposta e só depois validar
-		return 1;
+		WaitForSingleObject(hEventoResposta, INFINITE);
+		ResetEvent(hEventoResposta);
+		*valor = vistaResposta->valor;
+		return vistaResposta->resposta;
 		break;
 	case REMOTO://comunicar por pipes
 		break;
