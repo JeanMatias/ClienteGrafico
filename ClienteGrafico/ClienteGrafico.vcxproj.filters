@@ -39,12 +39,6 @@
     <Image Include="..\OBJ_Graficos\Snake-icon.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Comida.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Vodka.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_1.png">
       <Filter>Resource Files</Filter>
     </Image>
@@ -54,43 +48,16 @@
     <Image Include="..\OBJ_Graficos\Parede.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Glue.png">
+    <Image Include="..\obj_graficos\bitmap2.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Mouse.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Cab1.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Corpo.png">
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra2_Cab2.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra2_Corpo.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra2_Corpo1.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra2_Corpo2.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra2_Corpo3.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cola.png">
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -120,6 +120,39 @@ HINSTANCE	hInstGlobal;
 HMENU		hMenu;
 HDC			hdc, auxdc;
 
+HWND		janelaglobal;
+
+//*** Outros Objectos ***
+HDC memoriajanela;
+HDC hparede;
+HDC hmouse;
+HDC hcomida;
+
+//*** Objectos ***
+HDC halimento;
+HDC hgelo;
+HDC hgranada;
+HDC hvodka;
+HDC holeo;
+HDC hcola;
+HDC ho_vodka;
+HDC ho_oleo;
+HDC ho_cola;
+
+//*** Cobra 1 ***
+HDC hcobra1_cab1;
+HDC hcobra1_corpo;
+HDC hcobra1_corpo1;
+HDC hcobra1_corpo2;
+HDC hcobra1_corpo3;
+
+//*** Cobra 2 ***
+HDC hcobra2_cab2;
+HDC hcobra2_corpo;
+HDC hcobra2_corpo1;
+HDC hcobra2_corpo2;
+HDC hcobra2_corpo3;
+
 // ============================================================================
 // FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()
 // ============================================================================
@@ -516,6 +549,7 @@ BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l) {
 		}
 		return 1;
 	case WM_CLOSE:
+		
 		EndDialog(h, 1);
 		return TRUE;
 	case WN_CANCEL:
@@ -569,18 +603,36 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	hMenu = GetMenu(hWnd);							// Para obter o Handle do Menu
 	PAINTSTRUCT pintar;
 	RECT area;
-	static HPEN linha;
-	static HBITMAP vodka, mouse, glue, comida;
-	static HBITMAP cobra1cab1, parede;
-	static HBRUSH fundo, fundo1, fundo2;
 	int resposta, valor;
+	HBITMAP hbit;
+	static int maxX;
+	static int maxY;
+
 
 	switch (messg) {
-									parede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BITMAP1));
+		case WM_CREATE:
+								maxX = GetSystemMetrics(SM_CXSCREEN);
+								maxY = GetSystemMetrics(SM_CYSCREEN);
 
+								//Criar janela virtual para parede
+								device = GetDC(hWnd);
+								hparede = CreateCompatibleDC(device);
+								hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PAREDE));
+								SelectObject(hparede, hbit);
+								DeleteObject(hbit);
+			
+								janelaglobal = hWnd;
+			
+			//hparede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CORPOCOBRA1));
+									
 						break;
-		case WM_CLOSE:				if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-									PostQuitMessage(0);
+		case WM_CLOSE:				
+									if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+									{
+										fechaMemoriaPartilhada();
+										// fecahrmemoriapartilhadaresposta
+										PostQuitMessage(0);
+									}
 						break;
 
 		case WM_COMMAND:			// Para configuração dos parametros de TABULEIRO
@@ -593,13 +645,16 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+												
 									break;
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
 												preparaMemoriaPartilhada();
 												pede_RegistarClienteLocal(pId);
+												Sleep(500);
 												preparaMemoriaPartilhadaResposta(pId);
 												WaitForSingleObject(hEventoResposta, INFINITE);
 												ResetEvent(hEventoResposta);
+												
 												if (vistaResposta->resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);
 													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
@@ -607,9 +662,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
 													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
 													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+													
 												}
 												else if (vistaResposta->resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
+													
 												}
 												
 									break;
@@ -618,9 +675,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
 													valorCobra1 = valor;
+													
 												}
 												else if (resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+													
 												}
 									break;
 					case ID_JOGO_ASSOCIAR:		if (numJogadoresLocal == 0) {
@@ -630,13 +689,16 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 														MessageBox(hWnd, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
 														valorCobra1 = valor;
 														numJogadoresLocal++;
+														
 													}
 													else if (resposta == INSUCESSO) {
 														if (valor == AGORANAO) {
 															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+															
 														}
 														else if (valor == JOGOCHEIO) {
 															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+															
 														}
 														
 													}
@@ -648,13 +710,16 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 														MessageBox(hWnd, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
 														valorCobra2 = valor;
 														numJogadoresLocal++;
+														
 													}
 													else if (resposta == INSUCESSO) {
 														if (valor == AGORANAO) {
 															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+															
 														}
 														else if (valor == JOGOCHEIO) {
 															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+															
 														}
 													}
 												}
@@ -662,70 +727,82 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					case ID_JOGO_JOGAR:			resposta = chamaIniciaJogo(&valor);
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
+													
 												}
 												else if (resposta == INSUCESSO) {
 													if (valor == CRIADORERRADO) {
 														MessageBox(hWnd, TEXT("Apenas o cliente que criou o jogo pode iniciar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+														
 													}
 													if (valor == AGORANAO) {
 														MessageBox(hWnd, TEXT("Deve iniciar o jogo só depois de criar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+														
 													}
 												}						
 									break;		
 					case ID_CONFIGURAR_TABULEIRO:	DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
-			
+													
 									break;
 					case ID_CONFIGURAR_OBJECTOS:	DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
-			
+													
 									break;
 
-					case ID_EDITARJPGS:			if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
+					case ID_EDITARJPGS:			if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi)) {
+														
 														return 1;
+													}
 												   else
 														return 0;
 									break;
 
 					case ID_SAIR40011:			if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+												
 												PostQuitMessage(0);
 									break;
 
 					case ID_INFORMA40018:		MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
-			
+											
 									break;
 
 					case ID_AJUDA_AJUDA:		MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
-			
+												
 									break;
 
 					case ID_CONF_TECLAS_1:		DialogBox(hInstGlobal, IDD_TECLAS_1, hWnd, ConfigTeclas1);
-
+												
 									break;
 
 					case ID_CONF_TECLAS_2:		DialogBox(hInstGlobal, IDD_TECLAS_2, hWnd, ConfigTeclas2);
-
+												
 									break;
 					}
+		
+		/*case WM_ERASEBKGND:
+							
+									break;*/
+
 		case WM_PAINT:
 						hdc = BeginPaint(hWnd, &pintar);
-						auxdc = CreateCompatibleDC(hdc);
-
-						hdc = GetDC(hWnd);
-
-						////  Parede
-						//SelectObject(auxdc, parede);
-						//TransparentBlt(hdc, 40, 40, 45, 40, auxdc, 0, 0, 187, 125, RGB(255, 255, 255));
-
+						////auxdc = CreateCompatibleDC(hdc);
+												
+						//  Parede
+						// SelectObject(auxdc, hparede);
+						for (int i = 0; i < colunasConfig; i++)
+							for (int j = 0; j < linhasConfig; j++)
+								//TransparentBlt(hdc, i * 40, j * 40, 45, 40, auxdc, 0, 0, 187, 125, RGB(255, 255, 255));
+								BitBlt(hdc, i * 40, j * 40, maxX, maxY, hparede, 0, 0, SRCCOPY);
+								//BitBlt(hdc , 0 , 0 , maxX, maxY, memoria, 0 , 0 ,SRCOPY)
 
 						//ReleaseDC(hWnd, hdc);
-						////InvalidateRect(hWnd, NULL, 1);
+						//InvalidateRect(hWnd, NULL, 1);
 
-						DeleteDC(auxdc);
-						EndPaint(hWnd, hdc);
+						////DeleteDC(auxdc);
 						EndPaint(hWnd, &pintar);
+
 				break;
 		case WM_KEYUP:
 
-						//InvalidateRect(hWnd, NULL, 1);   // Gera WM_PAINTH
+						
 				break;
 						// TRATANDO O WM_CLOSE não é necessário tartar o WM_DESTROY  <<============  NOTA
 						//case WM_DESTROY:	// Destruir a janela e terminar o programa 
