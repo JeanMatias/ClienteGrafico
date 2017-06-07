@@ -156,11 +156,20 @@
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Baixo.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Direita.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Esquerda.bmp" />
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.bmp" />
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.png" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.bmp" />
+    <Image Include="..\OBJ_Graficos\Cola.bmp" />
+    <Image Include="..\OBJ_Graficos\ComidaRato.bmp" />
     <Image Include="..\OBJ_Graficos\Parede.bmp" />
     <Image Include="..\OBJ_Graficos\Snake-icon.ico" />
     <Image Include="..\OBJ_Graficos\Snake-icon.png" />
+    <Image Include="..\OBJ_Graficos\Vodka.bmp" />
     <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>

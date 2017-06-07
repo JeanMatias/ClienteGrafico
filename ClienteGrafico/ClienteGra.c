@@ -83,6 +83,7 @@ BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+DWORD WINAPI esperaActualizacao(LPVOID param);
 
 // ========= FIM ZONA DECLARAÇÃO DE VARIAVEIS E FUNÇÕES ========= //
 
@@ -140,14 +141,14 @@ HDC ho_oleo;
 HDC ho_cola;
 
 //*** Cobra 1 ***
-HDC hcobra1_cab1;
+HDC hcobra1_cab1_esquerda, hcobra1_cab1_direita, hcobra1_cab1_cima, hcobra1_cab1_baixo;
 HDC hcobra1_corpo;
 HDC hcobra1_corpo1;
 HDC hcobra1_corpo2;
 HDC hcobra1_corpo3;
 
 //*** Cobra 2 ***
-HDC hcobra2_cab2;
+HDC hcobra2_cab2_esquerda, hcobra2_cab2_direita, hcobra2_cab2_cima, hcobra2_cab2_baixo;
 HDC hcobra2_corpo;
 HDC hcobra2_corpo1;
 HDC hcobra2_corpo2;
@@ -215,8 +216,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 													// (NULL = não tem menu)
 	wcApp.cbClsExtra = 0;							// Livre, para uso particular
 	wcApp.cbWndExtra = 0;							// Livre, para uso particular
-	wcApp.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
-													// WHITE_BRUSH
+	wcApp.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+													// LTGRAY_BRUSH
 													// "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  // "GetStockObject".Neste caso o fundo será branco
 	
 	/* ============================================================================*/
@@ -610,27 +611,99 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 
 	switch (messg) {
-		case WM_CREATE:
-								maxX = GetSystemMetrics(SM_CXSCREEN);
-								maxY = GetSystemMetrics(SM_CYSCREEN);
+		case WM_CREATE:			/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
+									maxX = GetSystemMetrics(SM_CXSCREEN);
+									maxY = GetSystemMetrics(SM_CYSCREEN);
 
-								//Criar janela virtual para parede
-								device = GetDC(hWnd);
-								hparede = CreateCompatibleDC(device);
-								hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PAREDE));
-								SelectObject(hparede, hbit);
-								DeleteObject(hbit);
+								// Criar janela virtual para parede
+									device = GetDC(hWnd);
+									hparede = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PAREDE)); 
+									SelectObject(hparede, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para cobra 1 cabeça cima
+									device = GetDC(hWnd);
+									hcobra1_cab1_cima = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_CIMA));
+									SelectObject(hcobra1_cab1_cima, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para cobra 1 cabeça baixo
+									device = GetDC(hWnd);
+									hcobra1_cab1_baixo = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_BAIXO));
+									SelectObject(hcobra1_cab1_baixo, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para cobra 1 cabeça esquerda
+									device = GetDC(hWnd);
+									hcobra1_cab1_esquerda = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_ESQUERDA));
+									SelectObject(hcobra1_cab1_esquerda, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para cobra 1 cabeça direita
+									device = GetDC(hWnd);
+									hcobra1_cab1_direita = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_DIREITA));
+									SelectObject(hcobra1_cab1_direita, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para cobra 1 corpo
+									device = GetDC(hWnd);
+									hcobra1_corpo1 = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1));
+									SelectObject(hcobra1_corpo1, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para cobra 1 corpo Rapido
+									device = GetDC(hWnd);
+									hcobra1_corpo2 = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_2));
+									SelectObject(hcobra1_corpo2, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para cobra 1 corpo Bebada
+									device = GetDC(hWnd);
+									hcobra1_corpo3 = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_3));
+									SelectObject(hcobra1_corpo3, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para Comida Rato
+									device = GetDC(hWnd);
+									hcomida = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COMIDARATO));
+									SelectObject(hcomida, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para Cola
+									device = GetDC(hWnd);
+									hcola = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COLA));
+									SelectObject(hcola, hbit);
+									DeleteObject(hbit);
+
+								// Criar janela virtual para Vodka
+									device = GetDC(hWnd);
+									hvodka = CreateCompatibleDC(device);
+									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VODKA));
+									SelectObject(hvodka, hbit);
+									DeleteObject(hbit);
+
+								/* Igual janela */
+									janelaglobal = hWnd;
 			
-								janelaglobal = hWnd;
-			
-			//hparede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CORPOCOBRA1));
+									//hparede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CORPOCOBRA1));
 									
-						break;
+						break;	/****** FIM FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
 		case WM_CLOSE:				
 									if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 									{
-										fechaMemoriaPartilhada();
-										// fecahrmemoriapartilhadaresposta
+										// fechaMemoriaPartilhada();
+										fechaMemoriaPartilhadaGeral();
+										fechaMemoriaPartilhadaResposta();
 										PostQuitMessage(0);
 									}
 						break;
@@ -650,7 +723,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
 												preparaMemoriaPartilhada();
 												pede_RegistarClienteLocal(pId);
-												Sleep(500);
+												Sleep(1000);
 												preparaMemoriaPartilhadaResposta(pId);
 												WaitForSingleObject(hEventoResposta, INFINITE);
 												ResetEvent(hEventoResposta);
@@ -777,26 +850,47 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 									break;
 					}
 		
-		/*case WM_ERASEBKGND:
+		case WM_ERASEBKGND:
 							
-									break;*/
+									break;
 
 		case WM_PAINT:
 						hdc = BeginPaint(hWnd, &pintar);
-						////auxdc = CreateCompatibleDC(hdc);
+
+				//esperaActualizacao(lParam);    *******************************************
 												
 						//  Parede
-						// SelectObject(auxdc, hparede);
 						for (int i = 0; i < colunasConfig; i++)
 							for (int j = 0; j < linhasConfig; j++)
-								//TransparentBlt(hdc, i * 40, j * 40, 45, 40, auxdc, 0, 0, 187, 125, RGB(255, 255, 255));
-								BitBlt(hdc, i * 40, j * 40, maxX, maxY, hparede, 0, 0, SRCCOPY);
-								//BitBlt(hdc , 0 , 0 , maxX, maxY, memoria, 0 , 0 ,SRCOPY)
+								TransparentBlt(hdc, i * 40, j * 40, 45, 40, hparede, 0, 0, 187, 125, RGB(255, 255, 255));
+								//BitBlt(hdc, i * 40, j * 40, maxX, maxY, hparede, 0, 0, SRCCOPY);
+
+						// Cobra 1 cabeça cima
+							//TransparentBlt(hdc, 40, 40, 70, 70, hcobra1_cab1_cima, 0, 0, 187, 125, RGB(255, 255, 255));
+						BitBlt(hdc, 80, 40, 80, maxY, hcobra1_cab1_cima, 0, 0, SRCCOPY);
+
+						// Cobra 1 cabeça baixo
+							//TransparentBlt(hdc, 100, 150, 50, 50, hcobra1_cab1_baixo, 0, 0, 180, 125, RGB(255, 255, 255));
+						BitBlt(hdc, 100, 150, maxX, 80, hcobra1_cab1_baixo, 0, 0, SRCCOPY);
+
+						// Cobra 1 cabeça esquerda
+							//TransparentBlt(hdc, 140, 50, 100, 100, hcobra1_cab1_esquerda, 0, 0, 280, 125, RGB(255, 255, 255));
+						BitBlt(hdc, 180, 140, 80, maxY, hcobra1_cab1_esquerda, 0, 0, SRCCOPY);
+
+						// Cobra 1 cabeça direita
+						BitBlt(hdc, 487, 140, maxX, 80, hcobra1_cab1_direita, 0, 0, SRCCOPY);
+
+						// Cobra 1 corpo
+						BitBlt(hdc, 450, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
+						BitBlt(hdc, 414, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
+						BitBlt(hdc, 378, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
+
+						// Comida rato
+						BitBlt(hdc, 487, 440, 50, 50, hcomida, 0, 0, SRCCOPY);
 
 						//ReleaseDC(hWnd, hdc);
 						//InvalidateRect(hWnd, NULL, 1);
 
-						////DeleteDC(auxdc);
 						EndPaint(hWnd, &pintar);
 
 				break;
@@ -967,55 +1061,196 @@ BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 }
 
 BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	static int i;
-	HANDLE hPipe;
-	int n;
-	char str[TAM];
+	
 
-	//SetFocus(hWnd);
-	//switch (messg) {
-	//case WM_INITDIALOG:
-	//	i = 0;
-	//	SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para a esquerda...");
-	//	return 1;
-	//case WM_KEYDOWN:
-	//	switch (i) {
-	//	case 0://apanhar tecla para a esquerda
-	//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para a direita...");
-	//		i++;
-	//		t.esquerda = wParam;
-	//		return 1;
-	//	case 1://apanhar tecla para a direita
-	//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para cima...");
-	//		i++;
-	//		t.direita = wParam;
-	//		return 1;
-	//	case 2://apanhar tecla para cima
-	//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para baixo...");
-	//		i++;
-	//		t.cima = wParam;
-	//		return 1;
-	//	case 3://apanhar tecla para baixo
-	//		t.baixo = wParam;
-	//		//enviar teclas ao servidor
-	//		hPipe = LigarAoPipe(PIPE_NAME, "");
-	//		sprintf(str, "keyboard");
-	//		if (!WriteFile(hPipe, &str, TAM, (LPDWORD)&n, NULL)) {
-	//			exit(1);
-	//		}
-	//		if (!WriteFile(hPipe, j.nome, TAM, (LPDWORD)&n, NULL)) {
-	//			exit(1);
-	//		}
-	//		if (!WriteFile(hPipe, &t, sizeof(struct teclas), (LPDWORD)&n, NULL)) {
-	//			exit(1);
-	//		}
-	//		CloseHandle(hPipe);
-	//		EndDialog(hWnd, 1);
-	//		return 1;
-	//	}
-	//	return 0;
-	//}
+
 	return 0;
 }
 
+
+DWORD WINAPI esperaActualizacao(LPVOID param) {
+	int unidades, dezenas, centenas, aux;
+	WaitForSingleObject(hEventoMapa, INFINITE);
+	getLimitesMapa(linhas, colunas);
+	getMapa(mapa);
+	while (1) {//enquanto o jogo estiver a continuar
+		WaitForSingleObject(hEventoMapa, INFINITE);
+		getMapa(mapa);
+		for (int i = 0; i < linhas; i++) {
+			for (int j = 0; j < colunas; j++) {
+				switch (mapa[i][j]) {
+				case PAREDE:
+					break;
+				case ESPACOVAZIO:
+					break;
+				case ALIMENTO:
+					break;
+				case GELO:
+					break;
+				case GRANADA:
+					break;
+				case VODKA:
+					break;
+				case OLEO:
+					break;
+				case COLA:
+					break;
+				case O_VODKA:
+					break;
+				case O_OLEO:
+					break;
+				case O_COLA:
+					break;
+				case SURPRESA:
+					break;
+				default://está uma cobra no mapa nesta posicao
+					unidades = mapa[i][j] % 10;
+					aux = mapa[i][j] / 10;
+					dezenas = aux % 10;
+					centenas = aux / 10;
+					if (centenas == valorCobra1) {//a cobra do jogador 1 está na posição
+						switch (dezenas) {
+						case BEBADO:switch (unidades)
+						{//se tiver direção é cabeça senão é corpo da cobra
+						case CIMA:
+							break;
+						case BAIXO:
+							break;
+						case ESQUERDA:
+							break;
+						case DIREITA:
+							break;
+						default:
+							break;
+						}
+									break;
+						case LEBRE:switch (unidades)
+						{//se tiver direção é cabeça senão é corpo da cobra
+						case CIMA:
+							break;
+						case BAIXO:
+							break;
+						case ESQUERDA:
+							break;
+						case DIREITA:
+							break;
+						default:
+							break;
+						}
+								   break;
+						case TARTARUGA:switch (unidades)
+						{//se tiver direção é cabeça senão é corpo da cobra
+						case CIMA:
+							break;
+						case BAIXO:
+							break;
+						case ESQUERDA:
+							break;
+						case DIREITA:
+							break;
+						default:
+							break;
+						}
+									   break;
+						default://cor normal da cobra 1
+							switch (unidades)
+							{//se tiver direção é cabeça senão é corpo da cobra
+							case CIMA:
+								break;
+							case BAIXO:
+								break;
+							case ESQUERDA:
+								break;
+							case DIREITA:
+								break;
+							default:
+								break;
+							}
+							break;
+						}
+					}
+					else if (centenas == valorCobra2) {//a cobra do jogador 2 está na posição
+						switch (dezenas) {
+						case BEBADO:switch (unidades)
+						{//se tiver direção é cabeça senão é corpo da cobra
+						case CIMA:
+							break;
+						case BAIXO:
+							break;
+						case ESQUERDA:
+							break;
+						case DIREITA:
+							break;
+						default:
+							break;
+						}
+									break;
+						case LEBRE:switch (unidades)
+						{//se tiver direção é cabeça senão é corpo da cobra
+						case CIMA:
+							break;
+						case BAIXO:
+							break;
+						case ESQUERDA:
+							break;
+						case DIREITA:
+							break;
+						default:
+							break;
+						}
+								   break;
+						case TARTARUGA:switch (unidades)
+						{//se tiver direção é cabeça senão é corpo da cobra
+						case CIMA:
+							break;
+						case BAIXO:
+							break;
+						case ESQUERDA:
+							break;
+						case DIREITA:
+							break;
+						default:
+							break;
+						}
+									   break;
+						default://cor normal da cobra 2
+							switch (unidades)
+							{//se tiver direção é cabeça senão é corpo da cobra
+							case CIMA:
+								break;
+							case BAIXO:
+								break;
+							case ESQUERDA:
+								break;
+							case DIREITA:
+								break;
+							default:
+								break;
+							}
+							break;
+						}
+
+					}
+					else {//está outra cobra na posição
+						switch (unidades)
+						{//se tiver direção é cabeça senão é corpo da cobra
+						case CIMA:
+							break;
+						case BAIXO:
+							break;
+						case ESQUERDA:
+							break;
+						case DIREITA:
+							break;
+						default://corpo da cobra 3
+							break;
+						}
+					}
+
+					break;
+				}
+			}
+		}
+	}
+}
 

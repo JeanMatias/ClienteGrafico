@@ -48,16 +48,43 @@
     <Image Include="..\OBJ_Graficos\Parede.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\obj_graficos\bitmap2.bmp">
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp">
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bitmap2.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.bmp">
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Baixo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Direita.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Esquerda.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\ComidaRato.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cola.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Vodka.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
