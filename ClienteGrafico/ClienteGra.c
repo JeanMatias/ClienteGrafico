@@ -8,6 +8,7 @@
 /*         #DEFINES LOCAIS                              */
 /* -----------------------------------------------------*/
 #define MAX				256
+#define TAM				6
 #define LIMITE_1POSI	1
 #define LIMITE_2POSI	2
 #define LIMITE_3POSI	3
@@ -58,6 +59,13 @@ int linhas;
 int colunas;
 int mapa[MAX_LINHAS][MAX_COLUNAS];
 
+//**** Estrutura de teclas ****
+typedef struct {
+	int esquerda, direita, cima, baixo;
+}teclas;
+
+teclas teclasjogador1 = { 1, 2, 3, 4 };
+teclas teclasjogador2;
 
 /* ----------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES									 */
@@ -73,6 +81,8 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
+BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 
 // ========= FIM ZONA DECLARAÇÃO DE VARIAVEIS E FUNÇÕES ========= //
 
@@ -566,9 +576,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	int resposta, valor;
 
 	switch (messg) {
-		case WM_CREATE:
-									cobra1cab1	=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_PNG7));
-									parede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_PNG4));
+									parede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BITMAP1));
 
 						break;
 		case WM_CLOSE:				if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
@@ -583,6 +591,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
 									break;
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
 												preparaMemoriaPartilhada();
@@ -595,6 +605,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
 													EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
 													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
 												}
 												else if (vistaResposta->resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
@@ -666,46 +678,54 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					case ID_CONFIGURAR_OBJECTOS:	DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
 			
 									break;
+
 					case ID_EDITARJPGS:			if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi))
 														return 1;
 												   else
 														return 0;
 									break;
+
 					case ID_SAIR40011:			if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 												PostQuitMessage(0);
 									break;
+
 					case ID_INFORMA40018:		MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
 			
 									break;
+
 					case ID_AJUDA_AJUDA:		MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
 			
 									break;
+
+					case ID_CONF_TECLAS_1:		DialogBox(hInstGlobal, IDD_TECLAS_1, hWnd, ConfigTeclas1);
+
+									break;
+
+					case ID_CONF_TECLAS_2:		DialogBox(hInstGlobal, IDD_TECLAS_2, hWnd, ConfigTeclas2);
+
+									break;
 					}
-		/*case WM_PAINT:
-				hdc = BeginPaint(hWnd, &pintar);
+		case WM_PAINT:
+						hdc = BeginPaint(hWnd, &pintar);
+						auxdc = CreateCompatibleDC(hdc);
 
-				auxdc = CreateCompatibleDC(hdc);
+						hdc = GetDC(hWnd);
 
-				//  Parede
-				SelectObject(auxdc, parede);
-				for (int i = 0; i < 20; i++)
-					for (int j = 0; j < 20; j++)
-					BitBlt(hdc, j * 20, i * 20, 28, 28, auxdc, 0, 0, SRCCOPY);
+						////  Parede
+						//SelectObject(auxdc, parede);
+						//TransparentBlt(hdc, 40, 40, 45, 40, auxdc, 0, 0, 187, 125, RGB(255, 255, 255));
 
-				SelectObject(auxdc, cobra1cab1);
-				for (int i = 0; i < 20; i++)
-					for (int j = 0; j < 20; j++)
-						BitBlt(hdc, j * 20, i * 20, 28, 28, auxdc, 0, 0, SRCCOPY);
 
-				//ReleaseDC(hWnd, hdc);
-				//InvalidateRect(hWnd, NULL, 1);
+						//ReleaseDC(hWnd, hdc);
+						////InvalidateRect(hWnd, NULL, 1);
 
-				DeleteDC(auxdc);
-				EndPaint(hWnd, hdc);
-				EndPaint(hWnd, &pintar);
-				break;*/
+						DeleteDC(auxdc);
+						EndPaint(hWnd, hdc);
+						EndPaint(hWnd, &pintar);
+				break;
 		case WM_KEYUP:
 
+						//InvalidateRect(hWnd, NULL, 1);   // Gera WM_PAINTH
 				break;
 						// TRATANDO O WM_CLOSE não é necessário tartar o WM_DESTROY  <<============  NOTA
 						//case WM_DESTROY:	// Destruir a janela e terminar o programa 
@@ -784,4 +804,141 @@ int chamaIniciaJogo(int *valor) {
 		break;
 	}
 }
+
+/* ----------------------------------------------------- */
+/*	          FUNÇÃO CONFIGURAÇÃO TECLAS                 */
+/* ----------------------------------------------------- */
+
+BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
+	static int i;
+	HANDLE hPipe;
+	int n;
+	char str[TAM];
+	SetFocus(hWnd);
+
+	switch (messg) {
+		case WM_COMMAND:
+				switch (LOWORD(wParam)) {
+				case IDCANCEL:
+					EndDialog(hWnd, 0);
+					//return 1;
+
+				case IDOK:							// esquerda, direita, cima, baixo
+					GetDlgItemText(hWnd, IDC_EDIT1, teclasjogador1.esquerda, sizeof(IDC_EDIT1));
+					GetDlgItemText(hWnd, IDC_EDIT2, teclasjogador1.direita, sizeof(IDC_EDIT2));
+					GetDlgItemText(hWnd, IDC_EDIT3, teclasjogador1.cima, sizeof(IDC_EDIT3));
+					GetDlgItemText(hWnd, IDC_EDIT4, teclasjogador1.baixo, sizeof(IDC_EDIT4));
+					EndDialog(hWnd, 0);
+					break;
+				}
+				break;
+
+		case WM_CLOSE:
+				EndDialog(hWnd, 0);
+				return 1;
+
+		case WM_INITDIALOG:
+				//SetDlgItemText(hWnd, NULL, (LPCSTR)"Pressione a tecla para se mover para a esquerda...");
+					SendDlgItemMessage(hWnd, IDC_EDIT1, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+						SetDlgItemInt(hWnd, IDC_EDIT1, teclasjogador1.esquerda, TRUE);
+					SendDlgItemMessage(hWnd, IDC_EDIT2, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+						SetDlgItemInt(hWnd, IDC_EDIT2, teclasjogador1.direita, TRUE);
+					SendDlgItemMessage(hWnd, IDC_EDIT3, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+						SetDlgItemInt(hWnd, IDC_EDIT3, teclasjogador1.cima, TRUE);
+					SendDlgItemMessage(hWnd, IDC_EDIT4, EM_LIMITTEXT, LIMITE_1POSI, NULL);
+						SetDlgItemInt(hWnd, IDC_EDIT4, teclasjogador1.baixo, TRUE);
+				return 1;
+
+		case WM_KEYDOWN:
+				//	switch (i) {
+				//	case 0://apanhar tecla para a esquerda
+				//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para a direita...");
+				//		i++;
+				//		t.esquerda = wParam;
+				//		return 1;
+				//	case 1://apanhar tecla para a direita
+				//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para cima...");
+				//		i++;
+				//		t.direita = wParam;
+				//		return 1;
+				//	case 2://apanhar tecla para cima
+				//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para baixo...");
+				//		i++;
+				//		t.cima = wParam;
+				//		return 1;
+				//	case 3://apanhar tecla para baixo
+				//		t.baixo = wParam;
+				//		//enviar teclas ao servidor
+				//		hPipe = LigarAoPipe(PIPE_NAME, "");
+				//		sprintf(str, "keyboard");
+				//		if (!WriteFile(hPipe, &str, TAM, (LPDWORD)&n, NULL)) {
+				//			exit(1);
+				//		}
+				//		if (!WriteFile(hPipe, j.nome, TAM, (LPDWORD)&n, NULL)) {
+				//			exit(1);
+				//		}
+				//		if (!WriteFile(hPipe, &t, sizeof(struct teclas), (LPDWORD)&n, NULL)) {
+				//			exit(1);
+				//		}
+				//		CloseHandle(hPipe);
+				//		EndDialog(hWnd, 1);
+				//		return 1;
+				//	}
+				return 0;
+			}
+	return 0;
+}
+
+BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
+	static int i;
+	HANDLE hPipe;
+	int n;
+	char str[TAM];
+
+	//SetFocus(hWnd);
+	//switch (messg) {
+	//case WM_INITDIALOG:
+	//	i = 0;
+	//	SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para a esquerda...");
+	//	return 1;
+	//case WM_KEYDOWN:
+	//	switch (i) {
+	//	case 0://apanhar tecla para a esquerda
+	//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para a direita...");
+	//		i++;
+	//		t.esquerda = wParam;
+	//		return 1;
+	//	case 1://apanhar tecla para a direita
+	//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para cima...");
+	//		i++;
+	//		t.direita = wParam;
+	//		return 1;
+	//	case 2://apanhar tecla para cima
+	//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para baixo...");
+	//		i++;
+	//		t.cima = wParam;
+	//		return 1;
+	//	case 3://apanhar tecla para baixo
+	//		t.baixo = wParam;
+	//		//enviar teclas ao servidor
+	//		hPipe = LigarAoPipe(PIPE_NAME, "");
+	//		sprintf(str, "keyboard");
+	//		if (!WriteFile(hPipe, &str, TAM, (LPDWORD)&n, NULL)) {
+	//			exit(1);
+	//		}
+	//		if (!WriteFile(hPipe, j.nome, TAM, (LPDWORD)&n, NULL)) {
+	//			exit(1);
+	//		}
+	//		if (!WriteFile(hPipe, &t, sizeof(struct teclas), (LPDWORD)&n, NULL)) {
+	//			exit(1);
+	//		}
+	//		CloseHandle(hPipe);
+	//		EndDialog(hWnd, 1);
+	//		return 1;
+	//	}
+	//	return 0;
+	//}
+	return 0;
+}
+
 
