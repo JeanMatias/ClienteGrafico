@@ -16,6 +16,14 @@
 static int maxX;
 static int maxY;
 
+/* ----------------------------------------------------- */
+/*          CAMINHOS GLOBBAIS                            */
+/* ----------------------------------------------------- */
+
+TCHAR full_path[MAX] = TEXT("SOFTWARE\\MinhaAplicação\\");
+TCHAR full_path_orig[MAX] = TEXT("SOFTWARE\\MinhaAplicação\\");
+
+
 /* ===================================================== */
 /*		ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES        */
 /* ===================================================== */
@@ -611,17 +619,19 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	PAINTSTRUCT pintar;
 	RECT area;
 	int resposta, valor;
+	int retorno_utilizadores = 0;
 
 	switch (messg) {
 										// Carregar BitMaps para memoria
-		case WM_CREATE:					CarregaBitmaps(hWnd);  
+		case WM_CREATE:					
+									CarregaBitmaps(hWnd);  
 
 						break;
 
 		case WM_CLOSE:				
 									if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 									{
-										// fechaMemoriaPartilhada();
+										//fechaMemoriaPartilhada();
 										fechaMemoriaPartilhadaGeral();
 										fechaMemoriaPartilhadaResposta();
 										PostQuitMessage(0);
@@ -665,6 +675,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 									break;
 					case ID_JOGO_CRIAR:			DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
 												resposta = chamaCriaJogo(&valor);
+												retorno_utilizadores = validaUser(username1, retorno_utilizadores);
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
 													valorCobra1 = valor;
@@ -678,6 +689,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					case ID_JOGO_ASSOCIAR:		if (numJogadoresLocal == 0) {
 													DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
 													resposta = 	chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1,&valor);
+													retorno_utilizadores = validaUser(username1, retorno_utilizadores);
 													if (resposta == SUCESSO) {
 														MessageBox(hWnd, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
 														valorCobra1 = valor;
@@ -698,6 +710,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												}
 												else if (numJogadoresLocal == 1) {
 													DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
+													retorno_utilizadores = validaUser(username2, retorno_utilizadores);
 													resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
 													if (resposta == SUCESSO) {
 														MessageBox(hWnd, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
@@ -1316,4 +1329,36 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 	/****** FIM FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
 
 	return 1;
+}
+
+
+/*******  FUNÇÃO PARA VALIDAR USER  *******/
+
+int validaUser(TCHAR utilizador[SIZE_USERNAME], int usrsAtivos) {
+	HKEY chave;
+	DWORD oque;
+	int quantos = 0;
+	// HKEY_LOCAL_MACHINE
+	for (int i = 0; i < MAXJOGADORES; i++) {
+		_tcscpy_s(full_path, _tcslen(full_path) + 1, full_path_orig);
+		_tcscat(full_path, utilizador);
+		if (RegCreateKeyEx(HKEY_CURRENT_USER, &full_path, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &chave, &oque) != ERROR_SUCCESS) {
+			_tprintf(TEXT("Erro ao criar/abrir chave (%d)\n"), GetLastError());
+			return -1;
+		}
+		else {
+			if (oque == REG_CREATED_NEW_KEY) {
+				_tprintf(TEXT("\tChave criada\n FOI CRIADO NOVO USER"));
+
+			}
+			if (oque == REG_OPENED_EXISTING_KEY) {
+				_tprintf(TEXT("\tChave aberta\n FOI VALIDADO O USER"));
+				++quantos;
+			}
+		}
+		RegSetValueEx(chave, TEXT("Nome"), 0, REG_SZ, utilizador, sizeof(utilizador));
+		//RegSetValueEx(chave, TEXT("Score"), 0, REG_DWORD, &utilizador[i].score, sizeof(utilizador[i].score));
+	}
+	RegCloseKey(chave);
+	return quantos;
 }
