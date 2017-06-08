@@ -166,9 +166,16 @@
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.bmp" />
     <Image Include="..\OBJ_Graficos\Cola.bmp" />
     <Image Include="..\OBJ_Graficos\ComidaRato.bmp" />
+    <Image Include="..\OBJ_Graficos\granada.bmp" />
+    <Image Include="..\OBJ_Graficos\ice.bmp" />
+    <Image Include="..\OBJ_Graficos\oleo.bmp" />
+    <Image Include="..\OBJ_Graficos\o_cola.bmp" />
+    <Image Include="..\OBJ_Graficos\o_oleo.bmp" />
+    <Image Include="..\OBJ_Graficos\o_vodka.bmp" />
     <Image Include="..\OBJ_Graficos\Parede.bmp" />
     <Image Include="..\OBJ_Graficos\Snake-icon.ico" />
     <Image Include="..\OBJ_Graficos\Snake-icon.png" />
+    <Image Include="..\OBJ_Graficos\vida.bmp" />
     <Image Include="..\OBJ_Graficos\Vodka.bmp" />
     <Image Include="icon1.ico" />
   </ItemGroup>

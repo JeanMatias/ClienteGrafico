@@ -87,6 +87,27 @@
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\OBJ_Graficos\ice.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\o_vodka.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\granada.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\oleo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\o_oleo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\o_cola.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\vida.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\x64\Debug\SnakeDLL.lib" />

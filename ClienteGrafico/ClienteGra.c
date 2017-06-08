@@ -13,6 +13,9 @@
 #define LIMITE_2POSI	2
 #define LIMITE_3POSI	3
 
+static int maxX;
+static int maxY;
+
 /* ===================================================== */
 /*		ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES        */
 /* ===================================================== */
@@ -65,7 +68,7 @@ typedef struct {
 }teclas;
 
 teclas teclasjogador1 = { 1, 2, 3, 4 };
-teclas teclasjogador2;
+teclas teclasjogador2 = { 5, 6, 7, 8 };
 
 /* ----------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES									 */
@@ -83,6 +86,7 @@ BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK CarregaBitmaps(HWND hWnd);
 DWORD WINAPI esperaActualizacao(LPVOID param);
 
 // ========= FIM ZONA DECLARAÇÃO DE VARIAVEIS E FUNÇÕES ========= //
@@ -121,7 +125,9 @@ HINSTANCE	hInstGlobal;
 HMENU		hMenu;
 HDC			hdc, auxdc;
 
+HDC			device;
 HWND		janelaglobal;
+HBITMAP		hbit;
 
 //*** Outros Objectos ***
 HDC memoriajanela;
@@ -139,6 +145,7 @@ HDC hcola;
 HDC ho_vodka;
 HDC ho_oleo;
 HDC ho_cola;
+HDC surpresa_vida;
 
 //*** Cobra 1 ***
 HDC hcobra1_cab1_esquerda, hcobra1_cab1_direita, hcobra1_cab1_cima, hcobra1_cab1_baixo;
@@ -600,104 +607,17 @@ BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
 /* ----------------------------------------------------- */
 
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	HDC device;
 	hMenu = GetMenu(hWnd);							// Para obter o Handle do Menu
 	PAINTSTRUCT pintar;
 	RECT area;
 	int resposta, valor;
-	HBITMAP hbit;
-	static int maxX;
-	static int maxY;
-
 
 	switch (messg) {
-		case WM_CREATE:			/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
-									maxX = GetSystemMetrics(SM_CXSCREEN);
-									maxY = GetSystemMetrics(SM_CYSCREEN);
+										// Carregar BitMaps para memoria
+		case WM_CREATE:					CarregaBitmaps(hWnd);  
 
-								// Criar janela virtual para parede
-									device = GetDC(hWnd);
-									hparede = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PAREDE)); 
-									SelectObject(hparede, hbit);
-									DeleteObject(hbit);
+						break;
 
-								// Criar janela virtual para cobra 1 cabeça cima
-									device = GetDC(hWnd);
-									hcobra1_cab1_cima = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_CIMA));
-									SelectObject(hcobra1_cab1_cima, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para cobra 1 cabeça baixo
-									device = GetDC(hWnd);
-									hcobra1_cab1_baixo = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_BAIXO));
-									SelectObject(hcobra1_cab1_baixo, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para cobra 1 cabeça esquerda
-									device = GetDC(hWnd);
-									hcobra1_cab1_esquerda = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_ESQUERDA));
-									SelectObject(hcobra1_cab1_esquerda, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para cobra 1 cabeça direita
-									device = GetDC(hWnd);
-									hcobra1_cab1_direita = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_DIREITA));
-									SelectObject(hcobra1_cab1_direita, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para cobra 1 corpo
-									device = GetDC(hWnd);
-									hcobra1_corpo1 = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1));
-									SelectObject(hcobra1_corpo1, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para cobra 1 corpo Rapido
-									device = GetDC(hWnd);
-									hcobra1_corpo2 = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_2));
-									SelectObject(hcobra1_corpo2, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para cobra 1 corpo Bebada
-									device = GetDC(hWnd);
-									hcobra1_corpo3 = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_3));
-									SelectObject(hcobra1_corpo3, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para Comida Rato
-									device = GetDC(hWnd);
-									hcomida = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COMIDARATO));
-									SelectObject(hcomida, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para Cola
-									device = GetDC(hWnd);
-									hcola = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COLA));
-									SelectObject(hcola, hbit);
-									DeleteObject(hbit);
-
-								// Criar janela virtual para Vodka
-									device = GetDC(hWnd);
-									hvodka = CreateCompatibleDC(device);
-									hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VODKA));
-									SelectObject(hvodka, hbit);
-									DeleteObject(hbit);
-
-								/* Igual janela */
-									janelaglobal = hWnd;
-			
-									//hparede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CORPOCOBRA1));
-									
-						break;	/****** FIM FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
 		case WM_CLOSE:				
 									if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 									{
@@ -1073,7 +993,7 @@ DWORD WINAPI esperaActualizacao(LPVOID param) {
 	WaitForSingleObject(hEventoMapa, INFINITE);
 	getLimitesMapa(linhas, colunas);
 	getMapa(mapa);
-	while (1) {//enquanto o jogo estiver a continuar
+	while (1) {   //enquanto o jogo estiver a continuar
 		WaitForSingleObject(hEventoMapa, INFINITE);
 		getMapa(mapa);
 		for (int i = 0; i < linhas; i++) {
@@ -1254,3 +1174,146 @@ DWORD WINAPI esperaActualizacao(LPVOID param) {
 	}
 }
 
+
+BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
+
+	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
+
+	maxX = GetSystemMetrics(SM_CXSCREEN);
+	maxY = GetSystemMetrics(SM_CYSCREEN);
+
+	// Criar janela virtual para parede
+	device = GetDC(hWnd);
+	hparede = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PAREDE));
+	SelectObject(hparede, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para cobra 1 cabeça cima
+	device = GetDC(hWnd);
+	hcobra1_cab1_cima = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_CIMA));
+	SelectObject(hcobra1_cab1_cima, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para cobra 1 cabeça baixo
+	device = GetDC(hWnd);
+	hcobra1_cab1_baixo = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_BAIXO));
+	SelectObject(hcobra1_cab1_baixo, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para cobra 1 cabeça esquerda
+	device = GetDC(hWnd);
+	hcobra1_cab1_esquerda = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_ESQUERDA));
+	SelectObject(hcobra1_cab1_esquerda, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para cobra 1 cabeça direita
+	device = GetDC(hWnd);
+	hcobra1_cab1_direita = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_DIREITA));
+	SelectObject(hcobra1_cab1_direita, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para cobra 1 corpo
+	device = GetDC(hWnd);
+	hcobra1_corpo1 = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1));
+	SelectObject(hcobra1_corpo1, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para cobra 1 corpo Rapido
+	device = GetDC(hWnd);
+	hcobra1_corpo2 = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_2));
+	SelectObject(hcobra1_corpo2, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para cobra 1 corpo Bebada
+	device = GetDC(hWnd);
+	hcobra1_corpo3 = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_3));
+	SelectObject(hcobra1_corpo3, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para Comida Rato
+	device = GetDC(hWnd);
+	hcomida = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_ALIMENTO));
+	SelectObject(hcomida, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para gelo
+	device = GetDC(hWnd);
+	hgelo = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GELO));
+	SelectObject(hgelo, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para granada
+	device = GetDC(hWnd);
+	hgranada = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GRANADA));
+	SelectObject(hgranada, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para Vodka
+	device = GetDC(hWnd);
+	hvodka = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VODKA));
+	SelectObject(hvodka, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para o_vodka
+	device = GetDC(hWnd);
+	ho_vodka = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_VODKA));
+	SelectObject(ho_vodka, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para oleo
+	device = GetDC(hWnd);
+	holeo = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_OLEO));
+	SelectObject(holeo, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para o_oleo
+	device = GetDC(hWnd);
+	ho_oleo = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_OLEO));
+	SelectObject(ho_oleo, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para Cola
+	device = GetDC(hWnd);
+	hcola = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COLA));
+	SelectObject(hcola, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para O_Cola
+	device = GetDC(hWnd);
+	ho_cola = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_COLA));
+	SelectObject(ho_cola, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para Surpresa Vida
+	device = GetDC(hWnd);
+	surpresa_vida = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_SURPRESAVIDA));
+	SelectObject(surpresa_vida, hbit);
+	DeleteObject(hbit);
+
+	/* Igual janela */
+	janelaglobal = hWnd;
+
+	//hparede		=	LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CORPOCOBRA1));
+
+	/****** FIM FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
+
+	return 1;
+}
