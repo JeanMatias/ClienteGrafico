@@ -140,8 +140,6 @@ HBITMAP		hbit;
 //*** Outros Objectos ***
 HDC memoriajanela;
 HDC hparede;
-HDC hmouse;
-HDC hcomida;
 
 //*** Objectos ***
 HDC halimento;
@@ -154,6 +152,9 @@ HDC ho_vodka;
 HDC ho_oleo;
 HDC ho_cola;
 HDC surpresa_vida;
+HDC hcomida;
+HDC hmouse;
+HDC hprenda;
 
 //*** Cobra 1 ***
 HDC hcobra1_cab1_esquerda, hcobra1_cab1_direita, hcobra1_cab1_cima, hcobra1_cab1_baixo;
@@ -255,9 +256,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 													// Posição x pixels (default=à direita da última)
 		50,								// Posição y pixels (default=abaixo da última)
 		//CW_USEDEFAULT,		
-		800,										// Largura da janela (em pixels)
+		1200, //800,										// Largura da janela (em pixels)
 		//CW_USEDEFAULT,		
-		600,										// Altura da janela (em pixels)
+		600, //600,										// Altura da janela (em pixels)
 		//CW_USEDEFAULT,		
 		(HWND)HWND_DESKTOP,							// handle da janela pai (se se criar uma a partir de
 													// outra) ou HWND_DESKTOP se a janela for a primeira, 
@@ -795,8 +796,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 						//  Parede
 						for (int i = 0; i < colunasConfig; i++)
 							for (int j = 0; j < linhasConfig; j++)
-								TransparentBlt(hdc, i * 40, j * 40, 45, 40, hparede, 0, 0, 187, 125, RGB(255, 255, 255));
-								//BitBlt(hdc, i * 40, j * 40, maxX, maxY, hparede, 0, 0, SRCCOPY);
+								//TransparentBlt(hdc, i * 40, j * 40, 45, 40, hparede, 0, 0, 187, 125, RGB(255, 255, 255));
+								BitBlt(hdc, i * 20, j * 20, maxX, maxY, hparede, 0, 0, SRCCOPY);
 
 						// Cobra 1 cabeça cima
 							//TransparentBlt(hdc, 40, 40, 70, 70, hcobra1_cab1_cima, 0, 0, 187, 125, RGB(255, 255, 255));
@@ -812,14 +813,28 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 						// Cobra 1 cabeça direita
 						BitBlt(hdc, 487, 140, maxX, 80, hcobra1_cab1_direita, 0, 0, SRCCOPY);
-
 						// Cobra 1 corpo
-						BitBlt(hdc, 450, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
-						BitBlt(hdc, 414, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
-						BitBlt(hdc, 378, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
+						BitBlt(hdc, 467, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
+						BitBlt(hdc, 447, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
+						BitBlt(hdc, 427, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
+
+						// Cobra 2 Cabeça direita
+						BitBlt(hdc, 487, 180, maxX, 80, hcobra1_cab1_direita, 0, 0, SRCCOPY);
+						// Cobra 2 corpo
+						BitBlt(hdc, 467, 180, 35, 35, hcobra1_corpo2, 0, 0, SRCCOPY);
+						BitBlt(hdc, 447, 180, 35, 35, hcobra1_corpo2, 0, 0, SRCCOPY);
+						BitBlt(hdc, 427, 180, 35, 35, hcobra1_corpo2, 0, 0, SRCCOPY);
+
+						// Cobra 3 Cabeça direita
+						BitBlt(hdc, 487, 220, maxX, 80, hcobra1_cab1_direita, 0, 0, SRCCOPY);
+						// Cobra 2 corpo
+						BitBlt(hdc, 467, 220, 35, 35, hcobra1_corpo3, 0, 0, SRCCOPY);
+						BitBlt(hdc, 447, 220, 35, 35, hcobra1_corpo3, 0, 0, SRCCOPY);
+						BitBlt(hdc, 427, 220, 35, 35, hcobra1_corpo3, 0, 0, SRCCOPY);
+
 
 						// Comida rato
-						BitBlt(hdc, 487, 440, 50, 50, hcomida, 0, 0, SRCCOPY);
+						BitBlt(hdc, 487, 440, 20, 20, hcomida, 0, 0, SRCCOPY);
 
 						//ReleaseDC(hWnd, hdc);
 						//InvalidateRect(hWnd, NULL, 1);
@@ -1319,6 +1334,13 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 	surpresa_vida = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_SURPRESAVIDA));
 	SelectObject(surpresa_vida, hbit);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para Surpresa Prenda
+	device = GetDC(hWnd);
+	hprenda = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PRENDA));
+	SelectObject(hprenda, hbit);
 	DeleteObject(hbit);
 
 	/* Igual janela */

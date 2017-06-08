@@ -45,9 +45,6 @@
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Parede.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
@@ -106,6 +103,33 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\vida.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Parede.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bitmap8.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Prenda.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bmp00001.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bmp00002.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bmp00003.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bmp00004.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bmp00005.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\corpocob.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

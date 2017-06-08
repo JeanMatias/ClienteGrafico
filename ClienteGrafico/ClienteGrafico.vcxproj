@@ -153,6 +153,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\obj_graficos\bitmap2.bmp" />
+    <Image Include="..\obj_graficos\bitmap8.bmp" />
+    <Image Include="..\obj_graficos\bmp00001.bmp" />
+    <Image Include="..\obj_graficos\bmp00002.bmp" />
+    <Image Include="..\obj_graficos\bmp00003.bmp" />
+    <Image Include="..\obj_graficos\bmp00004.bmp" />
+    <Image Include="..\obj_graficos\bmp00005.bmp" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp" />
@@ -166,6 +172,7 @@
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.bmp" />
     <Image Include="..\OBJ_Graficos\Cola.bmp" />
     <Image Include="..\OBJ_Graficos\ComidaRato.bmp" />
+    <Image Include="..\obj_graficos\corpocob.bmp" />
     <Image Include="..\OBJ_Graficos\granada.bmp" />
     <Image Include="..\OBJ_Graficos\ice.bmp" />
     <Image Include="..\OBJ_Graficos\oleo.bmp" />
@@ -173,6 +180,7 @@
     <Image Include="..\OBJ_Graficos\o_oleo.bmp" />
     <Image Include="..\OBJ_Graficos\o_vodka.bmp" />
     <Image Include="..\OBJ_Graficos\Parede.bmp" />
+    <Image Include="..\OBJ_Graficos\Prenda.bmp" />
     <Image Include="..\OBJ_Graficos\Snake-icon.ico" />
     <Image Include="..\OBJ_Graficos\Snake-icon.png" />
     <Image Include="..\OBJ_Graficos\vida.bmp" />
