@@ -83,6 +83,7 @@ teclas teclasjogador2 = { 5, 6, 7, 8 };
 /* ----------------------------------------------------- */
 int chamaCriaJogo(int *valor);
 int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor);
+void desenhaMapaNaMemoria();
 
 /* --------------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES DE TRATAMENTO DE EVENTOS DE JANELAS	 */
@@ -131,13 +132,12 @@ STARTUPINFO si;
 
 HINSTANCE	hInstGlobal;
 HMENU		hMenu;
-HDC			hdc, auxdc;
-
-HDC			device;
 HWND		janelaglobal;
+
 HBITMAP		hbit;
 
 //*** Outros Objectos ***
+HDC	device;
 HDC memoriajanela;
 HDC hparede;
 
@@ -621,6 +621,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	RECT area;
 	int resposta, valor;
 	int retorno_utilizadores = 0;
+	DWORD tid;
 
 	switch (messg) {
 										// Carregar BitMaps para memoria
@@ -734,6 +735,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					case ID_JOGO_JOGAR:			resposta = chamaIniciaJogo(&valor);
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
+													CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &tid);
 													
 												}
 												else if (resposta == INSUCESSO) {
@@ -789,10 +791,16 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 									break;
 
 		case WM_PAINT:
-						hdc = BeginPaint(hWnd, &pintar);
+
+				device = BeginPaint(hWnd, &pintar);
+				BitBlt(device, 0, 0, maxX, maxY, memoriajanela, 0, 0, SRCCOPY);
+				EndPaint(hWnd, &pintar);
+
+				
+						//hdc = BeginPaint(hWnd, &pintar);
 
 				//esperaActualizacao(lParam);    *******************************************
-												
+					/*							
 						//  Parede
 						for (int i = 0; i < colunasConfig; i++)
 							for (int j = 0; j < linhasConfig; j++)
@@ -839,7 +847,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 						//ReleaseDC(hWnd, hdc);
 						//InvalidateRect(hWnd, NULL, 1);
 
-						EndPaint(hWnd, &pintar);
+						EndPaint(hWnd, &pintar);*/
 
 				break;
 		case WM_KEYUP:
@@ -1017,169 +1025,123 @@ BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 
 
 DWORD WINAPI esperaActualizacao(LPVOID param) {
-	int unidades, dezenas, centenas, aux;
+	
 	WaitForSingleObject(hEventoMapa, INFINITE);
-	getLimitesMapa(linhas, colunas);
+	getLimitesMapa(&linhas, &colunas);
 	getMapa(mapa);
 	while (1) {   //enquanto o jogo estiver a continuar
 		WaitForSingleObject(hEventoMapa, INFINITE);
 		getMapa(mapa);
-		for (int i = 0; i < linhas; i++) {
-			for (int j = 0; j < colunas; j++) {
-				switch (mapa[i][j]) {
-				case PAREDE:
-					break;
-				case ESPACOVAZIO:
-					break;
-				case ALIMENTO:
-					break;
-				case GELO:
-					break;
-				case GRANADA:
-					break;
-				case VODKA:
-					break;
-				case OLEO:
-					break;
-				case COLA:
-					break;
-				case O_VODKA:
-					break;
-				case O_OLEO:
-					break;
-				case O_COLA:
-					break;
-				case SURPRESA:
-					break;
-				default://está uma cobra no mapa nesta posicao
-					unidades = mapa[i][j] % 10;
-					aux = mapa[i][j] / 10;
-					dezenas = aux % 10;
-					centenas = aux / 10;
-					if (centenas == valorCobra1) {//a cobra do jogador 1 está na posição
-						switch (dezenas) {
-						case BEBADO:switch (unidades)
-						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:
-							break;
-						case BAIXO:
-							break;
-						case ESQUERDA:
-							break;
-						case DIREITA:
-							break;
-						default:
-							break;
-						}
-									break;
-						case LEBRE:switch (unidades)
-						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:
-							break;
-						case BAIXO:
-							break;
-						case ESQUERDA:
-							break;
-						case DIREITA:
-							break;
-						default:
-							break;
-						}
-								   break;
-						case TARTARUGA:switch (unidades)
-						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:
-							break;
-						case BAIXO:
-							break;
-						case ESQUERDA:
-							break;
-						case DIREITA:
-							break;
-						default:
-							break;
-						}
-									   break;
-						default://cor normal da cobra 1
-							switch (unidades)
-							{//se tiver direção é cabeça senão é corpo da cobra
-							case CIMA:
-								break;
-							case BAIXO:
-								break;
-							case ESQUERDA:
-								break;
-							case DIREITA:
-								break;
-							default:
-								break;
-							}
-							break;
-						}
-					}
-					else if (centenas == valorCobra2) {//a cobra do jogador 2 está na posição
-						switch (dezenas) {
-						case BEBADO:switch (unidades)
-						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:
-							break;
-						case BAIXO:
-							break;
-						case ESQUERDA:
-							break;
-						case DIREITA:
-							break;
-						default:
-							break;
-						}
-									break;
-						case LEBRE:switch (unidades)
-						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:
-							break;
-						case BAIXO:
-							break;
-						case ESQUERDA:
-							break;
-						case DIREITA:
-							break;
-						default:
-							break;
-						}
-								   break;
-						case TARTARUGA:switch (unidades)
-						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:
-							break;
-						case BAIXO:
-							break;
-						case ESQUERDA:
-							break;
-						case DIREITA:
-							break;
-						default:
-							break;
-						}
-									   break;
-						default://cor normal da cobra 2
-							switch (unidades)
-							{//se tiver direção é cabeça senão é corpo da cobra
-							case CIMA:
-								break;
-							case BAIXO:
-								break;
-							case ESQUERDA:
-								break;
-							case DIREITA:
-								break;
-							default:
-								break;
-							}
-							break;
-						}
+		desenhaMapaNaMemoria();
+		InvalidateRect(janelaglobal, NULL, 0);
+	}
+}
 
+void desenhaMapaNaMemoria() {
+	int unidades, dezenas, centenas, aux;
+	for (int i = 0; i < linhas; i++) {
+		for (int j = 0; j < colunas; j++) {
+			switch (mapa[i][j]) {
+			case PAREDE:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hparede, 0, 0, SRCCOPY);
+				break;
+			case ESPACOVAZIO:
+				break;
+			case ALIMENTO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hmouse, 0, 0, SRCCOPY);
+				break;
+			case GELO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hgelo, 0, 0, SRCCOPY);
+				break;
+			case GRANADA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hgranada, 0, 0, SRCCOPY);
+				break;
+			case VODKA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hvodka, 0, 0, SRCCOPY);
+				break;
+			case OLEO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, holeo, 0, 0, SRCCOPY);
+				break;
+			case COLA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcola, 0, 0, SRCCOPY);
+				break;
+			case O_VODKA://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, ho, 0, 0, SRCCOPY);
+				break;
+			case O_OLEO://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hparede, 0, 0, SRCCOPY);
+				break;
+			case O_COLA://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hparede, 0, 0, SRCCOPY);
+				break;
+			case SURPRESA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hprenda, 0, 0, SRCCOPY);
+				break;
+			default://está uma cobra no mapa nesta posicao
+				unidades = mapa[i][j] % 10;
+				aux = mapa[i][j] / 10;
+				dezenas = aux % 10;
+				centenas = aux / 10;
+				if (centenas == valorCobra1) {//a cobra do jogador 1 está na posição
+					switch (unidades)
+					{//se tiver direção é cabeça senão é corpo da cobra
+					case CIMA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_cima, 0, 0, SRCCOPY);
+						break;
+					case BAIXO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_baixo, 0, 0, SRCCOPY);
+						break;
+					case ESQUERDA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_esquerda, 0, 0, SRCCOPY);
+						break;
+					case DIREITA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_direita, 0, 0, SRCCOPY);
+						break;
+					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
+						switch (dezenas) {
+						case BEBADO:
+							break;
+						case LEBRE:
+							break;
+						case TARTARUGA:
+							break;
+						default://cor normal da cobra 1
+							BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_corpo, 0, 0, SRCCOPY);
+							break;
+						}
+						break;
+					}					
+				}
+				else if (centenas == valorCobra2) {//a cobra do jogador 2 está na posição
+					switch (dezenas) {
+					case BEBADO:switch (unidades)
+					{//se tiver direção é cabeça senão é corpo da cobra
+					case CIMA:
+						break;
+					case BAIXO:
+						break;
+					case ESQUERDA:
+						break;
+					case DIREITA:
+						break;
+					default:
+						break;
 					}
-					else {//está outra cobra na posição
+								break;
+					case LEBRE:switch (unidades)
+					{//se tiver direção é cabeça senão é corpo da cobra
+					case CIMA:
+						break;
+					case BAIXO:
+						break;
+					case ESQUERDA:
+						break;
+					case DIREITA:
+						break;
+					default:
+						break;
+					}
+							   break;
+					case TARTARUGA:switch (unidades)
+					{//se tiver direção é cabeça senão é corpo da cobra
+					case CIMA:
+						break;
+					case BAIXO:
+						break;
+					case ESQUERDA:
+						break;
+					case DIREITA:
+						break;
+					default:
+						break;
+					}
+								   break;
+					default://cor normal da cobra 2
 						switch (unidades)
 						{//se tiver direção é cabeça senão é corpo da cobra
 						case CIMA:
@@ -1190,13 +1152,30 @@ DWORD WINAPI esperaActualizacao(LPVOID param) {
 							break;
 						case DIREITA:
 							break;
-						default://corpo da cobra 3
+						default:
 							break;
 						}
+						break;
 					}
 
-					break;
 				}
+				else {//está outra cobra na posição
+					switch (unidades)
+					{//se tiver direção é cabeça senão é corpo da cobra
+					case CIMA:
+						break;
+					case BAIXO:
+						break;
+					case ESQUERDA:
+						break;
+					case DIREITA:
+						break;
+					default://corpo da cobra 3
+						break;
+					}
+				}
+
+				break;
 			}
 		}
 	}
@@ -1209,135 +1188,125 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 
 	maxX = GetSystemMetrics(SM_CXSCREEN);
 	maxY = GetSystemMetrics(SM_CYSCREEN);
+	device = GetDC(hWnd);
+	
+	//Criar Janela Virtual
+	memoriajanela = CreateCompatibleDC(device);
+	hbit = CreateCompatibleBitmap(device, maxX, maxY);
+	SelectObject(memoriajanela, hbit);
+	SelectObject(memoriajanela, GetStockObject(WHITE_BRUSH));
+	PatBlt(memoriajanela, 0, 0, maxX, maxY, PATCOPY);
+	DeleteObject(hbit);
 
 	// Criar janela virtual para parede
-	device = GetDC(hWnd);
 	hparede = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PAREDE));
 	SelectObject(hparede, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para cobra 1 cabeça cima
-	device = GetDC(hWnd);
 	hcobra1_cab1_cima = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_CIMA));
 	SelectObject(hcobra1_cab1_cima, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para cobra 1 cabeça baixo
-	device = GetDC(hWnd);
 	hcobra1_cab1_baixo = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_BAIXO));
 	SelectObject(hcobra1_cab1_baixo, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para cobra 1 cabeça esquerda
-	device = GetDC(hWnd);
 	hcobra1_cab1_esquerda = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_ESQUERDA));
 	SelectObject(hcobra1_cab1_esquerda, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para cobra 1 cabeça direita
-	device = GetDC(hWnd);
 	hcobra1_cab1_direita = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_DIREITA));
 	SelectObject(hcobra1_cab1_direita, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para cobra 1 corpo
-	device = GetDC(hWnd);
 	hcobra1_corpo1 = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1));
 	SelectObject(hcobra1_corpo1, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para cobra 1 corpo Rapido
-	device = GetDC(hWnd);
 	hcobra1_corpo2 = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_2));
 	SelectObject(hcobra1_corpo2, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para cobra 1 corpo Bebada
-	device = GetDC(hWnd);
 	hcobra1_corpo3 = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_3));
 	SelectObject(hcobra1_corpo3, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para Comida Rato
-	device = GetDC(hWnd);
 	hcomida = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_ALIMENTO));
 	SelectObject(hcomida, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para gelo
-	device = GetDC(hWnd);
 	hgelo = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GELO));
 	SelectObject(hgelo, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para granada
-	device = GetDC(hWnd);
 	hgranada = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GRANADA));
 	SelectObject(hgranada, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para Vodka
-	device = GetDC(hWnd);
 	hvodka = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VODKA));
 	SelectObject(hvodka, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para o_vodka
-	device = GetDC(hWnd);
 	ho_vodka = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_VODKA));
 	SelectObject(ho_vodka, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para oleo
-	device = GetDC(hWnd);
 	holeo = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_OLEO));
 	SelectObject(holeo, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para o_oleo
-	device = GetDC(hWnd);
 	ho_oleo = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_OLEO));
 	SelectObject(ho_oleo, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para Cola
-	device = GetDC(hWnd);
 	hcola = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COLA));
 	SelectObject(hcola, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para O_Cola
-	device = GetDC(hWnd);
 	ho_cola = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_COLA));
 	SelectObject(ho_cola, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para Surpresa Vida
-	device = GetDC(hWnd);
 	surpresa_vida = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_SURPRESAVIDA));
 	SelectObject(surpresa_vida, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para Surpresa Prenda
-	device = GetDC(hWnd);
 	hprenda = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PRENDA));
 	SelectObject(hprenda, hbit);
