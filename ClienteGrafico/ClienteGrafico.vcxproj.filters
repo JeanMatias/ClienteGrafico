@@ -132,6 +132,12 @@
     <Image Include="..\obj_graficos\corpocob.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\obj_graficos\bmp00006.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\fundo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Debug\SnakeDLL.lib" />

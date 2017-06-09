@@ -159,6 +159,7 @@
     <Image Include="..\obj_graficos\bmp00003.bmp" />
     <Image Include="..\obj_graficos\bmp00004.bmp" />
     <Image Include="..\obj_graficos\bmp00005.bmp" />
+    <Image Include="..\obj_graficos\bmp00006.bmp" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp" />
@@ -173,6 +174,7 @@
     <Image Include="..\OBJ_Graficos\Cola.bmp" />
     <Image Include="..\OBJ_Graficos\ComidaRato.bmp" />
     <Image Include="..\obj_graficos\corpocob.bmp" />
+    <Image Include="..\obj_graficos\fundo.bmp" />
     <Image Include="..\OBJ_Graficos\granada.bmp" />
     <Image Include="..\OBJ_Graficos\ice.bmp" />
     <Image Include="..\OBJ_Graficos\oleo.bmp" />

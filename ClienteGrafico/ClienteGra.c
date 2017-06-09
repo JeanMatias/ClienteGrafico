@@ -140,6 +140,7 @@ HBITMAP		hbit;
 HDC	device;
 HDC memoriajanela;
 HDC hparede;
+HDC hfundo;
 
 //*** Objectos ***
 HDC halimento;
@@ -1039,24 +1040,24 @@ DWORD WINAPI esperaActualizacao(LPVOID param) {
 
 void desenhaMapaNaMemoria() {
 	int unidades, dezenas, centenas, aux;
-	for (int i = 0; i < linhas; i++) {
-		for (int j = 0; j < colunas; j++) {
-			switch (mapa[i][j]) {
-			case PAREDE:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hparede, 0, 0, SRCCOPY);
+	for (int x = 0; x < colunas; x++) {
+		for (int y = 0; y < linhas; y++) {
+			switch (mapa[y][x]) {
+			case PAREDE:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hparede, 0, 0, SRCCOPY);
 				break;
-			case ESPACOVAZIO:
+			case ESPACOVAZIO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hfundo, 0, 0, SRCCOPY);
 				break;
-			case ALIMENTO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hmouse, 0, 0, SRCCOPY);
+			case ALIMENTO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hmouse, 0, 0, SRCCOPY);
 				break;
-			case GELO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hgelo, 0, 0, SRCCOPY);
+			case GELO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hgelo, 0, 0, SRCCOPY);
 				break;
-			case GRANADA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hgranada, 0, 0, SRCCOPY);
+			case GRANADA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hgranada, 0, 0, SRCCOPY);
 				break;
-			case VODKA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hvodka, 0, 0, SRCCOPY);
+			case VODKA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hvodka, 0, 0, SRCCOPY);
 				break;
-			case OLEO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, holeo, 0, 0, SRCCOPY);
+			case OLEO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, holeo, 0, 0, SRCCOPY);
 				break;
-			case COLA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcola, 0, 0, SRCCOPY);
+			case COLA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcola, 0, 0, SRCCOPY);
 				break;
 			case O_VODKA://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, ho, 0, 0, SRCCOPY);
 				break;
@@ -1064,23 +1065,23 @@ void desenhaMapaNaMemoria() {
 				break;
 			case O_COLA://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hparede, 0, 0, SRCCOPY);
 				break;
-			case SURPRESA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hprenda, 0, 0, SRCCOPY);
+			case SURPRESA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hprenda, 0, 0, SRCCOPY);
 				break;
 			default://está uma cobra no mapa nesta posicao
-				unidades = mapa[i][j] % 10;
-				aux = mapa[i][j] / 10;
+				unidades = mapa[y][x] % 10;
+				aux = mapa[y][x] / 10;
 				dezenas = aux % 10;
 				centenas = aux / 10;
 				if (centenas == valorCobra1) {//a cobra do jogador 1 está na posição
 					switch (unidades)
 					{//se tiver direção é cabeça senão é corpo da cobra
-					case CIMA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_cima, 0, 0, SRCCOPY);
+					case CIMA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_cab1_cima, 0, 0, SRCCOPY);
 						break;
-					case BAIXO:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_baixo, 0, 0, SRCCOPY);
+					case BAIXO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_cab1_baixo, 0, 0, SRCCOPY);
 						break;
-					case ESQUERDA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_esquerda, 0, 0, SRCCOPY);
+					case ESQUERDA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_cab1_esquerda, 0, 0, SRCCOPY);
 						break;
-					case DIREITA:BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_cab1_direita, 0, 0, SRCCOPY);
+					case DIREITA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_cab1_direita, 0, 0, SRCCOPY);
 						break;
 					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
 						switch (dezenas) {
@@ -1091,7 +1092,7 @@ void desenhaMapaNaMemoria() {
 						case TARTARUGA:
 							break;
 						default://cor normal da cobra 1
-							BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hcobra1_corpo, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo, 0, 0, SRCCOPY);
 							break;
 						}
 						break;
@@ -1196,6 +1197,12 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 	SelectObject(memoriajanela, hbit);
 	SelectObject(memoriajanela, GetStockObject(WHITE_BRUSH));
 	PatBlt(memoriajanela, 0, 0, maxX, maxY, PATCOPY);
+	DeleteObject(hbit);
+
+	// Criar janela virtual para fundo
+	hfundo = CreateCompatibleDC(device);
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_FUNDO));
+	SelectObject(hfundo, hbit);
 	DeleteObject(hbit);
 
 	// Criar janela virtual para parede
