@@ -30,9 +30,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\OBJ_Graficos\Snake-icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -45,16 +42,22 @@
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Cab1.bmp">
+    <Image Include="..\OBJ_Graficos\ComidaRato.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.bmp">
+    <Image Include="..\OBJ_Graficos\Parede.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\obj_graficos\bitmap2.bmp">
+    <Image Include="..\OBJ_Graficos\Prenda.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Corpo1.png">
+    <Image Include="..\obj_graficos\corpocob.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\fundo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\Cobra1_Corpo1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Baixo.bmp">
@@ -69,77 +72,41 @@
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Esquerda.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\ComidaRato.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cola.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Vodka.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\ice.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\o_vodka.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\granada.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\oleo.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\o_oleo.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\o_cola.bmp">
+    <Image Include="..\OBJ_Graficos\Vodka.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\vida.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Parede.bmp">
+    <Image Include="..\OBJ_Graficos\o_vodka.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\obj_graficos\bitmap8.bmp">
+    <Image Include="..\OBJ_Graficos\o_oleo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Prenda.bmp">
+    <Image Include="..\OBJ_Graficos\oleo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\obj_graficos\bmp00001.bmp">
+    <Image Include="..\OBJ_Graficos\o_cola.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\obj_graficos\bmp00002.bmp">
+    <Image Include="..\OBJ_Graficos\ice.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\obj_graficos\bmp00003.bmp">
+    <Image Include="..\OBJ_Graficos\granada.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\obj_graficos\bmp00004.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\obj_graficos\bmp00005.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\obj_graficos\corpocob.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\obj_graficos\bmp00006.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\obj_graficos\fundo.bmp">
+    <Image Include="..\OBJ_Graficos\Cola.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Debug\SnakeDLL.lib" />
+    <Library Include="..\x64\Debug\SnakeDLL.lib" />
   </ItemGroup>
 </Project>

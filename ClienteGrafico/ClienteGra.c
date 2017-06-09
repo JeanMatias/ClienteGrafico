@@ -4,8 +4,13 @@
 #include "..\..\SnakeDLL\SnakeDLL\SnakeDLL.h"
 
 
+/* ======================================================================= */
+/*					ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES		       */
+/* ======================================================================= */
+
+
 /* -----------------------------------------------------*/
-/*         #DEFINES LOCAIS                              */
+/*               #DEFINES LOCAIS                        */
 /* -----------------------------------------------------*/
 #define MAX				256
 #define TAM				6
@@ -13,24 +18,21 @@
 #define LIMITE_2POSI	2
 #define LIMITE_3POSI	3
 
+
+/* ----------------------------------------------------- */
+/*              VARIÁVEIS GLOBAIS						 */
+/* ----------------------------------------------------- */
+
 static int maxX;
 static int maxY;
 
-/* ----------------------------------------------------- */
-/*          CAMINHOS GLOBBAIS                            */
-/* ----------------------------------------------------- */
+TCHAR *szProgName = TEXT("Snake");
+TCHAR executavel[MAX] = TEXT("mspaint.exe");
+//TCHAR executavel[MAX] = TEXT("%windir%\system32\mspaint.exe");
 
-TCHAR full_path[MAX] = TEXT("SOFTWARE\\MinhaAplicação\\");
-TCHAR full_path_orig[MAX] = TEXT("SOFTWARE\\MinhaAplicação\\");
+PROCESS_INFORMATION pi;
+STARTUPINFO si;
 
-
-/* ===================================================== */
-/*		ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES        */
-/* ===================================================== */
-
-/* ----------------------------------------------------- */
-/*  VARIÁVEIS GLOBAIS									 */
-/* ----------------------------------------------------- */
 int tipoServidor		=	0;			//Se está ligado a um servidor local ou remoto
 
 //**** Variáveis de configuração do Jogo (começam com o valor por defeito)****
@@ -78,9 +80,10 @@ typedef struct {
 teclas teclasjogador1 = { 1, 2, 3, 4 };
 teclas teclasjogador2 = { 5, 6, 7, 8 };
 
-/* ----------------------------------------------------- */
-/*  PROTOTIPOS FUNÇÕES									 */
-/* ----------------------------------------------------- */
+/* --------------------------------------------------------- */
+/*				  PROTOTIPOS FUNÇÕES						 */
+/* --------------------------------------------------------- */
+
 int chamaCriaJogo(int *valor);
 int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor);
 void desenhaMapaNaMemoria();
@@ -88,6 +91,7 @@ void desenhaMapaNaMemoria();
 /* --------------------------------------------------------- */
 /*  PROTOTIPOS FUNÇÕES DE TRATAMENTO DE EVENTOS DE JANELAS	 */
 /* --------------------------------------------------------- */
+
 BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l);
@@ -98,33 +102,8 @@ BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK CarregaBitmaps(HWND hWnd);
 DWORD WINAPI esperaActualizacao(LPVOID param);
 
-// ========= FIM ZONA DECLARAÇÃO DE VARIAVEIS E FUNÇÕES ========= //
-
-/* ===================================================== */
-/* Programa base (esqueleto) para aplicações Windows     */
-/* ===================================================== */
-				// Cria uma janela de nome "Janela Principal" e pinta fundo de branco
-				// Modelo para programas Windows:
-				//  Composto por 2 funções: 
-				//	WinMain()     = Ponto de entrada dos programas windows
-				//			1) Define, cria e mostra a janela
-				//			2) Loop de recepção de mensagens provenientes do Windows
-				//     TrataEventos()= Processamentos da janela (pode ter outro nome)
-				//			1) É chamada pelo Windows (callback) 
-				//			2) Executa código em função da mensagem recebida
-
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
 
-				// Nome da classe da janela (para programas de uma só janela, normalmente este nome é 
-				// igual ao do próprio programa) "szprogName" é usado mais abaixo na definição das 
-				// propriedades do objecto janela
-
-TCHAR *szProgName = TEXT("Snake");
-TCHAR executavel[MAX] = TEXT("mspaint.exe");
-//TCHAR executavel[MAX] = TEXT("%windir%\system32\mspaint.exe");
-
-PROCESS_INFORMATION pi;
-STARTUPINFO si;
 
 /* --------------------------------------------------------- */
 /*                   HANDLES GLOBAIS                         */
@@ -171,32 +150,28 @@ HDC hcobra2_corpo1;
 HDC hcobra2_corpo2;
 HDC hcobra2_corpo3;
 
-// ============================================================================
-// FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()
-// ============================================================================
-				// Em Windows, o programa começa sempre a sua execução na função WinMain()que desempenha // o papel da função main() do C em modo consola WINAPI indica o "tipo da função" (WINAPI // para todas as declaradas nos headers do Windows e CALLBACK para as funções de        // processamento da janela)
-				// Parâmetros:
-				//   hInst: Gerado pelo Windows, é o handle (número) da instância deste programa 
-				//   hPrevInst: Gerado pelo Windows, é sempre NULL para o NT (era usado no Windows 3.1)
-				//   lpCmdLine: Gerado pelo Windows, é um ponteiro para uma string terminada por 0
-				//              destinada a conter parâmetros para o programa 
-				//   nCmdShow:  Parâmetro que especifica o modo de exibição da janela (usado em  
-				//        	   ShowWindow()
-				// ============================================================================
-				// WinMain()
-				// NOTA: Ver declaração de HACCEL, LoadAccelerators() e TranslateAccelerator()
-				//		 Estas são as modificações necessárias para tratar as teclas de atalho
-				//		 para opções do menu
-				// ============================================================================
+
+/* ============================================================================ */
+/*					Programa base (esqueleto) para aplicações Windows			*/
+/*																				*/																	
+/*					FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()						*/
+/* ============================================================================ */
+				
+				// ============================================================================ //
+				// WinMain()																	//
+				// NOTA: Ver declaração de HACCEL, LoadAccelerators() e TranslateAccelerator()  //
+				//		 Estas são as modificações necessárias para tratar as teclas de atalho  //
+				//		 para opções do menu													//
+				// ============================================================================	//
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
 
-	HWND hWnd;				// hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
-	MSG lpMsg;				// MSG é uma estrutura definida no Windows para as mensagens
-	WNDCLASSEX wcApp;		// WNDCLASSEX é uma estrutura cujos membros servem para 
-							// definir as características da classe da janela
+	HWND hWnd;													// hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
+	MSG lpMsg;													// MSG é uma estrutura definida no Windows para as mensagens
+	WNDCLASSEX wcApp;											// WNDCLASSEX é uma estrutura cujos membros servem para 
+																// definir as características da classe da janela
 	BOOL ret;
-	HACCEL hAccel;			// Handler da resource accelerators (teclas de atalho
+	HACCEL hAccel;												// Handler da resource accelerators (teclas de atalho
 
 	hInstGlobal = hInst;
 
@@ -205,89 +180,85 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 
 	/* ---- Definição Pipes ---- */
 
-						// ============================================================================
-						// 1. Definição das características da janela "wcApp" 
-						//    (Valores dos elementos da estrutura "wcApp" do tipo WNDCLASSEX)
-						// ============================================================================
+																//    Definição das características da janela "wcApp" 
+																//    (Valores dos elementos da estrutura "wcApp" do tipo WNDCLASSEX)
 
-	wcApp.cbSize = sizeof(WNDCLASSEX);				// Tamanho da estrutura WNDCLASSEX
-	wcApp.hInstance = hInst;						// Instância da janela actualmente exibida 
-													// ("hInst" é parâmetro de WinMain e vem 
-													// inicializada daí)
-	wcApp.lpszClassName = szProgName;				// Nome da janela (neste caso = nome do programa)
-	wcApp.lpfnWndProc = TrataEventos;				// Endereço da função de processamento da janela 	// ("TrataEventos" foi declarada no início e                 // encontra-se mais abaixo)
-	wcApp.style = CS_HREDRAW | CS_VREDRAW;			// Estilo da janela: Fazer o redraw se for      // modificada horizontal ou verticalmente
-													// CS_VREDRAW
-													//wcApp.hIcon = LoadIcon(NULL, IDI_HAND);// "hIcon" = handler do ícon normal
+	wcApp.cbSize = sizeof(WNDCLASSEX);							// Tamanho da estrutura WNDCLASSEX
+	wcApp.hInstance = hInst;									// Instância da janela actualmente exibida 
+																// ("hInst" é parâmetro de WinMain e vem 
+																// inicializada daí)
+	wcApp.lpszClassName = szProgName;							// Nome da janela (neste caso = nome do programa)
+	wcApp.lpfnWndProc = TrataEventos;							// Endereço da função de processamento da janela 	              
+	wcApp.style = CS_HREDRAW | CS_VREDRAW;						// Estilo da janela: Fazer o redraw se for modificada horizontal ou verticalmente
+																//wcApp.hIcon = LoadIcon(NULL, IDI_HAND);// "hIcon" = handler do ícon normal
 	wcApp.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDC_ICON));
-													// Icon Grande		// IDI_APPLICATION		  //"NULL" = Icon definido no Windows
-													// "IDI_AP..." Ícone "aplicação"
-	wcApp.hIconSm = LoadIcon(hInst, IDI_ICON4);		// "hIconSm" = handler do ícon pequeno   //   
-													// Icon Small		// IDI_INFORMATION			 //"NULL" = Icon definido no Windows
-													// "IDI_INF..." Ícon de informação
-	wcApp.hCursor = LoadCursor(NULL, IDC_ARROW);		// "hCursor" = handler do cursor (rato) 
-													// IDC_ARROW				// "NULL" = Forma definida no Windows
-													// "IDC_ARROW" Aspecto "seta" 
+																// Icon Grande		IDI_APPLICATION		"NULL" = Icon definido no Windows
+																// "IDI_AP..." Ícone "aplicação"
+	wcApp.hIconSm = LoadIcon(hInst, IDI_ICON4);					// "hIconSm" = handler do ícon pequeno      
+																// Icon Small	IDI_INFORMATION	"NULL" = Icon definido no Windows
+																// "IDI_INF..." Ícon de informação
+	wcApp.hCursor = LoadCursor(NULL, IDC_ARROW);				// "hCursor" = handler do cursor (rato) 
+																// IDC_ARROW "NULL" = Forma definida no Windows
+																// "IDC_ARROW" Aspecto "seta" 
 	wcApp.lpszMenuName = (LPCTSTR)(IDR_MENU1);
-	//wcApp.lpszMenuName = NULL;					// Classe do menu que a janela pode ter
-													// (NULL = não tem menu)
-	wcApp.cbClsExtra = 0;							// Livre, para uso particular
-	wcApp.cbWndExtra = 0;							// Livre, para uso particular
-	wcApp.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-													// LTGRAY_BRUSH
-													// "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  // "GetStockObject".Neste caso o fundo será branco
+	//wcApp.lpszMenuName = NULL;								// Classe do menu que a janela pode ter
+																// (NULL = não tem menu)
+	wcApp.cbClsExtra = 0;										// Livre, para uso particular
+	wcApp.cbWndExtra = 0;										// Livre, para uso particular
+	wcApp.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);	// LTGRAY_BRUSH
+																// "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por  // "GetStockObject".Neste caso o fundo será branco
 	
-	/* ============================================================================*/
-	/*					2. Registar a classe "wcApp" no Windows	                   */
-	/* ============================================================================*/
+	/* --------------------------------------------------------- */
+	/*		   Registar a classe "wcApp" no Windows	             */
+	/* --------------------------------------------------------- */
 	
 	if (!RegisterClassEx(&wcApp))
 		return(0);
 
-	/* ============================================================================*/
-	/*					3. Criar a janela                                          */
-	/* ============================================================================*/
+	/* --------------------------------------------------------- */
+	/*			Criar a janela                                   */
+	/* --------------------------------------------------------- */
 	
 	hWnd = CreateWindow(
-		szProgName,									// Nome da janela (programa) definido acima
-		TEXT("Snake Multiplayer"),					// Texto que figura na barra do título
-		// WS_VSCROLL |								// Adicinar Scrool Bar se necessário		
-		WS_OVERLAPPEDWINDOW,						// Estilo da janela (WS_OVERLAPPED= normal)
-		50,								//CW_USEDEFAULT,
-													// Posição x pixels (default=à direita da última)
-		50,								// Posição y pixels (default=abaixo da última)
-		//CW_USEDEFAULT,		
-		1200, //800,										// Largura da janela (em pixels)
-		//CW_USEDEFAULT,		
-		600, //600,										// Altura da janela (em pixels)
-		//CW_USEDEFAULT,		
-		(HWND)HWND_DESKTOP,							// handle da janela pai (se se criar uma a partir de
-													// outra) ou HWND_DESKTOP se a janela for a primeira, 
-													// criada a partir do "desktop"
-		(HMENU)hMenu,								// handle do menu da janela (se tiver menu)
-		(HINSTANCE)hInst,							// handle da instância do programa actual ("hInst" é 
-													// passado num dos parâmetros de WinMain()
-		0);											// Não há parâmetros adicionais para a janela
+		szProgName,												// Nome da janela (programa) definido acima
+		TEXT("Snake Multiplayer"),								// Texto que figura na barra do título
+																// Adicinar Scrool Bar se necessário	WS_VSCROLL |			
+		WS_OVERLAPPEDWINDOW,									// Estilo da janela (WS_OVERLAPPED= normal)
+		50,														//CW_USEDEFAULT,
+																// Posição x pixels (default=à direita da última)
+		50,														// Posição y pixels (default=abaixo da última)
+																//CW_USEDEFAULT,		
+		1200, 													// Largura da janela (em pixels)
+																//CW_USEDEFAULT,		
+		600, 													// Altura da janela (em pixels)
+																//CW_USEDEFAULT,		
+		(HWND)HWND_DESKTOP,										// handle da janela pai (se se criar uma a partir de
+																// outra) ou HWND_DESKTOP se a janela for a primeira, 
+																// criada a partir do "desktop"
+		(HMENU)hMenu,											// handle do menu da janela (se tiver menu)
+		(HINSTANCE)hInst,										// handle da instância do programa actual ("hInst" é 
+																// passado num dos parâmetros de WinMain()
+		0);														// Não há parâmetros adicionais para a janela
 
-	/* ============================================================================ */
+	/* ---------------------------------------------------------------------------- */
 	/* Carregar as definições das teclas aceleradoras (atalhos de opções dos Menus) */
 	/* LoadAccelerators(instância_programa, ID_da_resource_atalhos)				    */
-	/* ============================================================================ */
+	/* ---------------------------------------------------------------------------- */
 
 	hAccel = LoadAccelerators(hInst, (LPCWSTR)IDR_ACCELERATOR1);
 
-	/* ============================================================================ */
-	/*				4. Mostrar a janela												*/
-	/* ============================================================================ */
+	/* ---------------------------------------------------------------------------- */
+	/*							Mostrar a janela									*/
+	/* ---------------------------------------------------------------------------- */
 
-	ShowWindow(hWnd, nCmdShow);			// "hWnd"= handler da janela, devolvido por 
-										// "CreateWindow"; "nCmdShow"= modo de exibição (p.e. 
-										// normal/modal); é passado como parâmetro de WinMain()
-			UpdateWindow(hWnd);			// Refrescar a janela (Windows envia à janela uma 
-										// mensagem para pintar, mostrar dados, (refrescar)… 
-										// ============================================================================
-										// 5. Loop de Mensagens
-										// ============================================================================
+	ShowWindow(hWnd, nCmdShow);									// "hWnd"= handler da janela, devolvido por 
+																// "CreateWindow"; "nCmdShow"= modo de exibição (p.e. 
+																// normal/modal); é passado como parâmetro de WinMain()
+	UpdateWindow(hWnd);											// Refrescar a janela (Windows envia à janela uma 
+																// mensagem para pintar, mostrar dados, (refrescar)… 
+										// -----------------------------------------------------------------------------
+										//				Loop de Mensagens
+										// -----------------------------------------------------------------------------
 										// O Windows envia mensagens às janelas (programas). Estas mensagens ficam numa fila de
 										// espera até que GetMessage(...) possa ler "a mensagem seguinte"	
 										// Parâmetros de "getMessage":
@@ -319,41 +290,41 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	while ((ret = GetMessage(&lpMsg, NULL, 0, 0)) != 0) {
 		if (ret != -1) {
 			if (!TranslateAccelerator(hWnd, hAccel, &lpMsg)) {
-				TranslateMessage(&lpMsg);	// Pré-processamento da mensagem (p.e. obter código 
-											// ASCII da tecla premida)
-				DispatchMessage(&lpMsg);	// Enviar a mensagem traduzida de volta ao Windows, que
-											// aguarda até que a possa reenviar à função de 
-											// tratamento da janela, CALLBACK TrataEventos (abaixo)
+				TranslateMessage(&lpMsg);							// Pré-processamento da mensagem (p.e. obter código 
+																	// ASCII da tecla premida)
+				DispatchMessage(&lpMsg);							// Enviar a mensagem traduzida de volta ao Windows, que
+																	// aguarda até que a possa reenviar à função de 
+																	// tratamento da janela, CALLBACK TrataEventos (abaixo)
 			}
 		}
 	}
 
-	/* ============================================================================ */
-	/*						6. Fim do programa										*/
-	/* ============================================================================ */
+	/* ---------------------------------------------------------------------------- */
+	/*							Fim do programa										*/
+	/* ---------------------------------------------------------------------------- */
 
-	return((int)lpMsg.wParam);				// Retorna sempre o parâmetro wParam da estrutura lpMsg
+	return((int)lpMsg.wParam);										// Retorna sempre o parâmetro wParam da estrutura lpMsg
 }
-							// ============================================================================
-							// FUNÇÃO DE PROCESSAMENTO DA JANELA
-							// Esta função pode ter um nome qualquer: Apenas é necesário que na inicialização da     // estrutura "wcApp", feita no início de WinMain(), se identifique essa função. Neste   // caso "wcApp.lpfnWndProc = WndProc"
-							//
-							// WndProc recebe as mensagens enviadas pelo Windows (depois de lidas e pré-processadas // no loop "while" da função WinMain()
-							//
-							// Parâmetros:
-							//		hWnd	O handler da janela, obtido no CreateWindow()
-							//		messg	Ponteiro para a estrutura mensagem (ver estrutura em 5. Loop...
-							//		wParam	O parâmetro wParam da estrutura messg (a mensagem)
-							//		lParam	O parâmetro lParam desta mesma estrutura
-							//
-							// NOTA:Estes parâmetros estão aqui acessíveis o que simplifica o acesso aos seus valores
-							//
-							// A função EndProc é sempre do tipo "switch..." com "cases" que descriminam a mensagem // recebida e a tratar. Estas mensagens são identificadas por constantes (p.e. 
-							// WM_DESTROY, WM_CHAR, WM_KEYDOWN, WM_PAINT...) definidas em windows.h ============================================================================
+																	// ============================================================================
+																	// FUNÇÃO DE PROCESSAMENTO DA JANELA
+																	// Esta função pode ter um nome qualquer: Apenas é necesário que na inicialização da     // estrutura "wcApp", feita no início de WinMain(), se identifique essa função. Neste   // caso "wcApp.lpfnWndProc = WndProc"
+																	//
+																	// WndProc recebe as mensagens enviadas pelo Windows (depois de lidas e pré-processadas // no loop "while" da função WinMain()
+																	//
+																	// Parâmetros:
+																	//		hWnd	O handler da janela, obtido no CreateWindow()
+																	//		messg	Ponteiro para a estrutura mensagem (ver estrutura em 5. Loop...
+																	//		wParam	O parâmetro wParam da estrutura messg (a mensagem)
+																	//		lParam	O parâmetro lParam desta mesma estrutura
+																	//
+																	// NOTA:Estes parâmetros estão aqui acessíveis o que simplifica o acesso aos seus valores
+																	//
+																	// A função EndProc é sempre do tipo "switch..." com "cases" que descriminam a mensagem // recebida e a tratar. Estas mensagens são identificadas por constantes (p.e. 
+																	// WM_DESTROY, WM_CHAR, WM_KEYDOWN, WM_PAINT...) definidas em windows.h ============================================================================
 
 
 /* ============================================================================ */
-/*					FUNÇÕES CALLBACK											*/
+/*								FUNÇÕES CALLBACK   								*/
 /* ============================================================================ */
 
 /* ----------------------------------------------------- */
@@ -610,8 +581,6 @@ BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
 	return 0;
 }
 
-// ****************  FIM DAS FUNÇÕES CALLBACK GERAIS *************************************
-
 /* ----------------------------------------------------- */
 /*	FUNÇÃO CALLBACK BASE DA APLICAÇÃO / TRATA TECLADO    */
 /* ----------------------------------------------------- */
@@ -625,34 +594,32 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	DWORD tid;
 
 	switch (messg) {
-										// Carregar BitMaps para memoria
 		case WM_CREATE:					
-									CarregaBitmaps(hWnd);  
-
-						break;
+					CarregaBitmaps(hWnd);  // Carregar BitMaps para memoria
+				break;
 
 		case WM_CLOSE:				
-									if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-									{
-										//fechaMemoriaPartilhada();
-										fechaMemoriaPartilhadaGeral();
-										fechaMemoriaPartilhadaResposta();
-										PostQuitMessage(0);
-									}
-						break;
+					if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+					{
+					//fechaMemoriaPartilhada();
+					fechaMemoriaPartilhadaGeral();
+					fechaMemoriaPartilhadaResposta();
+					PostQuitMessage(0);
+					}
+				break;
 
-		case WM_COMMAND:			// Para configuração dos parametros de TABULEIRO
-									// Sem PAI fica não bloqueante, pode ficar NULL ou Handle do Pai para bloquear
+		case WM_COMMAND:			
 			switch (wParam)
 					{
-					case ID_SERVIDOR_REMOTO:	DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
+					case ID_SERVIDOR_REMOTO:	
+												DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
 												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
-												
 									break;
+
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
 												preparaMemoriaPartilhada();
 												pede_RegistarClienteLocal(pId);
@@ -660,7 +627,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												preparaMemoriaPartilhadaResposta(pId);
 												WaitForSingleObject(hEventoResposta, INFINITE);
 												ResetEvent(hEventoResposta);
-												
 												if (vistaResposta->resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);
 													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
@@ -668,200 +634,130 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
 													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
 													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
-													
 												}
 												else if (vistaResposta->resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
-													
 												}
-												
 									break;
+
 					case ID_JOGO_CRIAR:			DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
 												resposta = chamaCriaJogo(&valor);
-												retorno_utilizadores = validaUser(username1, retorno_utilizadores);
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
 													valorCobra1 = valor;
-													
 												}
 												else if (resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-													
 												}
 									break;
+
 					case ID_JOGO_ASSOCIAR:		if (numJogadoresLocal == 0) {
 													DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
 													resposta = 	chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1,&valor);
-													retorno_utilizadores = validaUser(username1, retorno_utilizadores);
 													if (resposta == SUCESSO) {
 														MessageBox(hWnd, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
 														valorCobra1 = valor;
 														numJogadoresLocal++;
-														
 													}
 													else if (resposta == INSUCESSO) {
 														if (valor == AGORANAO) {
 															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-															
 														}
 														else if (valor == JOGOCHEIO) {
 															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
-															
 														}
-														
 													}
 												}
 												else if (numJogadoresLocal == 1) {
 													DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
-													retorno_utilizadores = validaUser(username2, retorno_utilizadores);
 													resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
 													if (resposta == SUCESSO) {
 														MessageBox(hWnd, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
 														valorCobra2 = valor;
 														numJogadoresLocal++;
-														
 													}
 													else if (resposta == INSUCESSO) {
 														if (valor == AGORANAO) {
 															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-															
 														}
 														else if (valor == JOGOCHEIO) {
 															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
-															
 														}
 													}
 												}
 									break;
+
 					case ID_JOGO_JOGAR:			resposta = chamaIniciaJogo(&valor);
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
 													CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &tid);
-													
 												}
 												else if (resposta == INSUCESSO) {
 													if (valor == CRIADORERRADO) {
 														MessageBox(hWnd, TEXT("Apenas o cliente que criou o jogo pode iniciar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
-														
 													}
 													if (valor == AGORANAO) {
 														MessageBox(hWnd, TEXT("Deve iniciar o jogo só depois de criar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
-														
 													}
 												}						
-									break;		
-					case ID_CONFIGURAR_TABULEIRO:	DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
-													
-									break;
-					case ID_CONFIGURAR_OBJECTOS:	DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
+									break;	
+
+					case ID_CONFIGURAR_TABULEIRO:	
+												DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
 													
 									break;
 
-					case ID_EDITARJPGS:			if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi)) {
-														
-														return 1;
-													}
+					case ID_CONFIGURAR_OBJECTOS:	
+												DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
+													
+									break;
+
+					case ID_EDITARJPGS:			
+												if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi)) {														
+													return 1;
+												}
 												   else
-														return 0;
+													return 0;
 									break;
 
-					case ID_SAIR40011:			if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-												
+					case ID_SAIR40011:			
+												if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)												
 												PostQuitMessage(0);
 									break;
 
-					case ID_INFORMA40018:		MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);
-											
+					case ID_INFORMA40018:		
+												MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);											
 									break;
 
-					case ID_AJUDA_AJUDA:		MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);
-												
+					case ID_AJUDA_AJUDA:		
+												MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);												
 									break;
 
-					case ID_CONF_TECLAS_1:		DialogBox(hInstGlobal, IDD_TECLAS_1, hWnd, ConfigTeclas1);
-												
+					case ID_CONF_TECLAS_1:		
+												DialogBox(hInstGlobal, IDD_TECLAS_1, hWnd, ConfigTeclas1);												
 									break;
 
-					case ID_CONF_TECLAS_2:		DialogBox(hInstGlobal, IDD_TECLAS_2, hWnd, ConfigTeclas2);
-												
+					case ID_CONF_TECLAS_2:		
+												DialogBox(hInstGlobal, IDD_TECLAS_2, hWnd, ConfigTeclas2);												
 									break;
 					}
 		
 		case WM_ERASEBKGND:
-							
-									break;
+
+				break;
 
 		case WM_PAINT:
-
 				device = BeginPaint(hWnd, &pintar);
 				BitBlt(device, 0, 0, maxX, maxY, memoriajanela, 0, 0, SRCCOPY);
-				EndPaint(hWnd, &pintar);
-
-				
-						//hdc = BeginPaint(hWnd, &pintar);
-
-				//esperaActualizacao(lParam);    *******************************************
-					/*							
-						//  Parede
-						for (int i = 0; i < colunasConfig; i++)
-							for (int j = 0; j < linhasConfig; j++)
-								//TransparentBlt(hdc, i * 40, j * 40, 45, 40, hparede, 0, 0, 187, 125, RGB(255, 255, 255));
-								BitBlt(hdc, i * 20, j * 20, maxX, maxY, hparede, 0, 0, SRCCOPY);
-
-						// Cobra 1 cabeça cima
-							//TransparentBlt(hdc, 40, 40, 70, 70, hcobra1_cab1_cima, 0, 0, 187, 125, RGB(255, 255, 255));
-						BitBlt(hdc, 80, 40, 80, maxY, hcobra1_cab1_cima, 0, 0, SRCCOPY);
-
-						// Cobra 1 cabeça baixo
-							//TransparentBlt(hdc, 100, 150, 50, 50, hcobra1_cab1_baixo, 0, 0, 180, 125, RGB(255, 255, 255));
-						BitBlt(hdc, 100, 150, maxX, 80, hcobra1_cab1_baixo, 0, 0, SRCCOPY);
-
-						// Cobra 1 cabeça esquerda
-							//TransparentBlt(hdc, 140, 50, 100, 100, hcobra1_cab1_esquerda, 0, 0, 280, 125, RGB(255, 255, 255));
-						BitBlt(hdc, 180, 140, 80, maxY, hcobra1_cab1_esquerda, 0, 0, SRCCOPY);
-
-						// Cobra 1 cabeça direita
-						BitBlt(hdc, 487, 140, maxX, 80, hcobra1_cab1_direita, 0, 0, SRCCOPY);
-						// Cobra 1 corpo
-						BitBlt(hdc, 467, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
-						BitBlt(hdc, 447, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
-						BitBlt(hdc, 427, 140, 35, 35, hcobra1_corpo1, 0, 0, SRCCOPY);
-
-						// Cobra 2 Cabeça direita
-						BitBlt(hdc, 487, 180, maxX, 80, hcobra1_cab1_direita, 0, 0, SRCCOPY);
-						// Cobra 2 corpo
-						BitBlt(hdc, 467, 180, 35, 35, hcobra1_corpo2, 0, 0, SRCCOPY);
-						BitBlt(hdc, 447, 180, 35, 35, hcobra1_corpo2, 0, 0, SRCCOPY);
-						BitBlt(hdc, 427, 180, 35, 35, hcobra1_corpo2, 0, 0, SRCCOPY);
-
-						// Cobra 3 Cabeça direita
-						BitBlt(hdc, 487, 220, maxX, 80, hcobra1_cab1_direita, 0, 0, SRCCOPY);
-						// Cobra 2 corpo
-						BitBlt(hdc, 467, 220, 35, 35, hcobra1_corpo3, 0, 0, SRCCOPY);
-						BitBlt(hdc, 447, 220, 35, 35, hcobra1_corpo3, 0, 0, SRCCOPY);
-						BitBlt(hdc, 427, 220, 35, 35, hcobra1_corpo3, 0, 0, SRCCOPY);
-
-
-						// Comida rato
-						BitBlt(hdc, 487, 440, 20, 20, hcomida, 0, 0, SRCCOPY);
-
-						//ReleaseDC(hWnd, hdc);
-						//InvalidateRect(hWnd, NULL, 1);
-
-						EndPaint(hWnd, &pintar);*/
-
+				EndPaint(hWnd, &pintar);								
 				break;
+
 		case WM_KEYUP:
-
-						
+					
 				break;
-						// TRATANDO O WM_CLOSE não é necessário tartar o WM_DESTROY  <<============  NOTA
-						//case WM_DESTROY:	// Destruir a janela e terminar o programa 
-						//					// "PostQuitMessage(Exit Status)"	
-						//		PostQuitMessage(0);
-						//	break;
+						
 		default:
-						// Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar") // não é efectuado nenhum processamento, apenas se segue o "default" do Windows			
+				
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
 	}
 	return(0);
@@ -1018,9 +914,9 @@ BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 }
 
 BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	
-
-
+	//
+	//	*******************************************
+	//
 	return 0;
 }
 
@@ -1059,11 +955,11 @@ void desenhaMapaNaMemoria() {
 				break;
 			case COLA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcola, 0, 0, SRCCOPY);
 				break;
-			case O_VODKA://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, ho, 0, 0, SRCCOPY);
+			case O_VODKA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, ho_vodka, 0, 0, SRCCOPY);
 				break;
-			case O_OLEO://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hparede, 0, 0, SRCCOPY);
+			case O_OLEO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, ho_oleo, 0, 0, SRCCOPY);
 				break;
-			case O_COLA://BitBlt(memoriajanela, i * 20, j * 20, 20, 20, hparede, 0, 0, SRCCOPY);
+			case O_COLA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, ho_cola, 0, 0, SRCCOPY);
 				break;
 			case SURPRESA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hprenda, 0, 0, SRCCOPY);
 				break;
@@ -1182,6 +1078,9 @@ void desenhaMapaNaMemoria() {
 	}
 }
 
+/* ----------------------------------------------------- */
+/*	          FUNÇÃO CARREGAR BITMAPS                    */
+/* ----------------------------------------------------- */
 
 BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 
@@ -1309,7 +1208,7 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 
 	// Criar janela virtual para Surpresa Vida
 	surpresa_vida = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_SURPRESAVIDA));
+	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VIDA));
 	SelectObject(surpresa_vida, hbit);
 	DeleteObject(hbit);
 
@@ -1327,36 +1226,4 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 	/****** FIM FUNÇÕES PARA CARREGAR BITMAPS - WM_CREATE ******/
 
 	return 1;
-}
-
-
-/*******  FUNÇÃO PARA VALIDAR USER  *******/
-
-int validaUser(TCHAR utilizador[SIZE_USERNAME], int usrsAtivos) {
-	HKEY chave;
-	DWORD oque;
-	int quantos = 0;
-	// HKEY_LOCAL_MACHINE
-	for (int i = 0; i < MAXJOGADORES; i++) {
-		_tcscpy_s(full_path, _tcslen(full_path) + 1, full_path_orig);
-		_tcscat(full_path, utilizador);
-		if (RegCreateKeyEx(HKEY_CURRENT_USER, &full_path, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &chave, &oque) != ERROR_SUCCESS) {
-			_tprintf(TEXT("Erro ao criar/abrir chave (%d)\n"), GetLastError());
-			return -1;
-		}
-		else {
-			if (oque == REG_CREATED_NEW_KEY) {
-				_tprintf(TEXT("\tChave criada\n FOI CRIADO NOVO USER"));
-
-			}
-			if (oque == REG_OPENED_EXISTING_KEY) {
-				_tprintf(TEXT("\tChave aberta\n FOI VALIDADO O USER"));
-				++quantos;
-			}
-		}
-		RegSetValueEx(chave, TEXT("Nome"), 0, REG_SZ, utilizador, sizeof(utilizador));
-		//RegSetValueEx(chave, TEXT("Score"), 0, REG_DWORD, &utilizador[i].score, sizeof(utilizador[i].score));
-	}
-	RegCloseKey(chave);
-	return quantos;
 }
