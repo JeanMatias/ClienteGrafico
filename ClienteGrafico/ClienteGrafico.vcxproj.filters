@@ -36,9 +36,6 @@
     <Image Include="..\OBJ_Graficos\Snake-icon.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_1.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -64,12 +61,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Direita.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Esquerda.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.bmp">
@@ -105,8 +96,44 @@
     <Image Include="..\OBJ_Graficos\Cola.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Direita.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Esquerda.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo4.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\Cobra2_Cab2_Cima.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2_Baixo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2_Direita.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2_Esquerda.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\Cobra2_Corpo2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo3.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo4.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Debug\SnakeDLL.lib" />
+    <Library Include="..\x64\Debug\SnakeDLL.lib" />
   </ItemGroup>
 </Project>

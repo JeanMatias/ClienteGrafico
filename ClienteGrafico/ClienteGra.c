@@ -99,6 +99,7 @@ BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK CarregaBitmaps(HWND hWnd);
 BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 DWORD WINAPI esperaActualizacao(LPVOID param);
 
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
@@ -113,6 +114,8 @@ HMENU		hMenu;
 HWND		janelaglobal;
 
 HBITMAP		hbit;
+
+HANDLE teste;	//handle para testar se o cliente é unico na máquina
 
 //*** Outros Objectos ***
 HDC	device;
@@ -137,18 +140,17 @@ HDC hprenda;
 
 //*** Cobra 1 ***
 HDC hcobra1_cab1_esquerda, hcobra1_cab1_direita, hcobra1_cab1_cima, hcobra1_cab1_baixo;
-HDC hcobra1_corpo;
 HDC hcobra1_corpo1;
 HDC hcobra1_corpo2;
 HDC hcobra1_corpo3;
+HDC hcobra1_corpo4;
 
 //*** Cobra 2 ***
 HDC hcobra2_cab2_esquerda, hcobra2_cab2_direita, hcobra2_cab2_cima, hcobra2_cab2_baixo;
-HDC hcobra2_corpo;
 HDC hcobra2_corpo1;
 HDC hcobra2_corpo2;
 HDC hcobra2_corpo3;
-
+HDC hcobra2_corpo4;
 
 /* ============================================================================ */
 /*					Programa base (esqueleto) para aplicações Windows			*/
@@ -593,7 +595,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	DWORD tid;
 
 	switch (messg) {
-		case WM_CREATE:					
+		case WM_CREATE:		
+					//teste = CreateMutex(NULL, TRUE, NOME_MUTEX_TESTE);
+					//if (GetLastError() == ERROR_ALREADY_EXISTS) {
+					//apresenta messagebox e sai do programa
+					//}
 					CarregaBitmaps(hWnd);  // Carregar BitMaps para memoria
 				break;
 
@@ -613,6 +619,10 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					case ID_SERVIDOR_REMOTO:	
 												DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
 												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+												EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
 									break;
 
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
@@ -624,7 +634,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												ResetEvent(hEventoResposta);
 												if (vistaResposta->resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);													
-													EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);													
+													EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
 												}
 												else if (vistaResposta->resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
@@ -729,11 +743,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 									break;
 
 					case ID_CONF_TECLAS_1:		
-												DialogBox(hInstGlobal, IDD_TECLAS, hWnd, ConfigTeclas1);												
+												DialogBox(hInstGlobal, IDD_TECLAS1, hWnd, ConfigTeclas1);												
 									break;
 
 					case ID_CONF_TECLAS_2:		
-												//DialogBox(hInstGlobal, IDD_TECLAS_2, hWnd, ConfigTeclas2);												
+												DialogBox(hInstGlobal, IDD_TECLAS2, hWnd, ConfigTeclas2);												
 									break;
 					}
 		
@@ -848,12 +862,12 @@ BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 		case 0://apanhar tecla para a esquerda
 			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para a direita..."));
 			i++;
-			teclasjogador1.esquerda;
+			teclasjogador1.esquerda = wParam;
 			return 1;
 		case 1://apanhar tecla para a direita
 			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para cima..."));
 			i++;
-			teclasjogador1.direita;
+			teclasjogador1.direita = wParam;
 			return 1;
 		case 2://apanhar tecla para cima
 			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para baixo..."));
@@ -871,11 +885,44 @@ BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 }
 
 BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	//
-	//	*******************************************
-	//
+	static int i;
+	HANDLE hPipe;
+	int n;
+	char str[TAM];
+
+	SetFocus(hWnd);
+	switch (messg) {
+	case WM_INITDIALOG:
+		i = 0;
+		SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para a esquerda..."));
+		return 1;
+	case WM_KEYDOWN:
+		switch (i) {
+		case 0://apanhar tecla para a esquerda
+			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para a direita..."));
+			i++;
+			teclasjogador1.esquerda = wParam;
+			return 1;
+		case 1://apanhar tecla para a direita
+			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para cima..."));
+			i++;
+			teclasjogador1.direita = wParam;
+			return 1;
+		case 2://apanhar tecla para cima
+			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para baixo..."));
+			i++;
+			teclasjogador1.cima = wParam;
+			return 1;
+		case 3://apanhar tecla para baixo
+			teclasjogador1.baixo = wParam;
+			EndDialog(hWnd, 1);
+			return 1;
+		}
+		return 0;
+	}
 	return 0;
 }
+
 
 
 DWORD WINAPI esperaActualizacao(LPVOID param) {
@@ -998,20 +1045,20 @@ void desenhaMapaNaMemoria() {
 					default://cor normal da cobra 2
 						switch (unidades)
 						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:
+						case CIMA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_cima, 0, 0, SRCCOPY);
 							break;
-						case BAIXO:
+						case BAIXO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_baixo, 0, 0, SRCCOPY);
 							break;
-						case ESQUERDA:
+						case ESQUERDA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_esquerda, 0, 0, SRCCOPY);
 							break;
-						case DIREITA:
+						case DIREITA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_direita, 0, 0, SRCCOPY);
 							break;
 						default:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo2, 0, 0, SRCCOPY);
 							break;
 						}
 						break;
 					}
-
 				}
 				else {//está outra cobra na posição
 					switch (unidades)
@@ -1067,48 +1114,105 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 	SelectObject(hparede, hbit);
 	DeleteObject(hbit);
 
-	// Criar janela virtual para cobra 1 cabeça cima
-	hcobra1_cab1_cima = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_CIMA));
-	SelectObject(hcobra1_cab1_cima, hbit);
-	DeleteObject(hbit);
+	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - COBRA 1 ******/
+					// Criar janela virtual para cobra 1 cabeça cima
+					hcobra1_cab1_cima = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_CIMA));
+					SelectObject(hcobra1_cab1_cima, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para cobra 1 cabeça baixo
-	hcobra1_cab1_baixo = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_BAIXO));
-	SelectObject(hcobra1_cab1_baixo, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para cobra 1 cabeça baixo
+					hcobra1_cab1_baixo = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_BAIXO));
+					SelectObject(hcobra1_cab1_baixo, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para cobra 1 cabeça esquerda
-	hcobra1_cab1_esquerda = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_ESQUERDA));
-	SelectObject(hcobra1_cab1_esquerda, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para cobra 1 cabeça esquerda
+					hcobra1_cab1_esquerda = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_ESQUERDA));
+					SelectObject(hcobra1_cab1_esquerda, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para cobra 1 cabeça direita
-	hcobra1_cab1_direita = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_DIREITA));
-	SelectObject(hcobra1_cab1_direita, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para cobra 1 cabeça direita
+					hcobra1_cab1_direita = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA1_DIREITA));
+					SelectObject(hcobra1_cab1_direita, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para cobra 1 corpo
-	hcobra1_corpo1 = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1));
-	SelectObject(hcobra1_corpo1, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para cobra 1 corpo
+					hcobra1_corpo1 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1));
+					SelectObject(hcobra1_corpo1, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para cobra 1 corpo Rapido
-	hcobra1_corpo2 = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_2));
-	SelectObject(hcobra1_corpo2, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para cobra 1 corpo ==> LENTA
+					hcobra1_corpo2 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_2));
+					SelectObject(hcobra1_corpo2, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para cobra 1 corpo Bebada
-	hcobra1_corpo3 = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_3));
-	SelectObject(hcobra1_corpo3, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para cobra 1 corpo ==> RAPIDA
+					hcobra1_corpo3 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_3));
+					SelectObject(hcobra1_corpo3, hbit);
+					DeleteObject(hbit);
 
+					// Criar janela virtual para cobra 1 corpo ==> BEBADA
+					hcobra1_corpo4 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_4));
+					SelectObject(hcobra1_corpo4, hbit);
+					DeleteObject(hbit);
+
+	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - COBRA 2 ******/
+					// Criar janela virtual para cobra 2 cabeça cima
+					hcobra2_cab2_cima = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA2_CIMA));
+					SelectObject(hcobra2_cab2_cima, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 2 cabeça baixo
+					hcobra2_cab2_baixo = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA2_BAIXO));
+					SelectObject(hcobra2_cab2_baixo, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 2 cabeça esquerda
+					hcobra2_cab2_esquerda = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA2_ESQUERDA));
+					SelectObject(hcobra2_cab2_esquerda, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 2 cabeça direita
+					hcobra2_cab2_direita = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA2_DIREITA));
+					SelectObject(hcobra2_cab2_direita, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 2 corpo
+					hcobra2_corpo1 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2));
+					SelectObject(hcobra2_corpo1, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 2 corpo ==> LENTA
+					hcobra2_corpo2 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2_2));
+					SelectObject(hcobra2_corpo2, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 2 corpo ==> RAPIDA
+					hcobra2_corpo3 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2_3));
+					SelectObject(hcobra2_corpo3, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 2 corpo ==> BEBADA
+					hcobra2_corpo4 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2_4));
+					SelectObject(hcobra2_corpo4, hbit);
+					DeleteObject(hbit);
+
+	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - OBJETOS ******/
 	// Criar janela virtual para Comida Rato
 	hcomida = CreateCompatibleDC(device);
 	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_ALIMENTO));

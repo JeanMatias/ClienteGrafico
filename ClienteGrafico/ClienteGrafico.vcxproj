@@ -152,15 +152,24 @@
     <ResourceCompile Include="ClienteGrafico.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo1.bmp" />
+    <Image Include="..\obj_graficos\Cobra2_Corpo2.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2_Baixo.bmp" />
+    <Image Include="..\obj_graficos\Cobra2_Cab2_Cima.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Baixo.bmp" />
     <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima.bmp" />
-    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Direita.bmp" />
-    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Cima_Esquerda.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Direita.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Cab1_Esquerda.bmp" />
     <Image Include="..\obj_graficos\Cobra1_Corpo1.bmp" />
     <Image Include="..\OBJ_Graficos\Cobra1_1.ico" />
-    <Image Include="..\OBJ_Graficos\Cobra1_1.png" />
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo2.bmp" />
     <Image Include="..\OBJ_Graficos\Cobra1_Corpo3.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra1_Corpo4.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2_Direita.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Cab2_Esquerda.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo3.bmp" />
+    <Image Include="..\OBJ_Graficos\Cobra2_Corpo4.bmp" />
     <Image Include="..\OBJ_Graficos\Cola.bmp" />
     <Image Include="..\OBJ_Graficos\ComidaRato.bmp" />
     <Image Include="..\obj_graficos\corpocob.bmp" />
@@ -179,7 +188,7 @@
     <Image Include="..\OBJ_Graficos\Vodka.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Debug\SnakeDLL.lib" />
+    <Library Include="..\x64\Debug\SnakeDLL.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
