@@ -69,6 +69,7 @@ int valorCobra2			=	0;				//valor da cobra do jogador 2 desta maquina
 TCHAR username1[SIZE_USERNAME];				//Nome do Jogador 1 desta Maquina
 TCHAR username2[SIZE_USERNAME];				//Nome do Jogador 2 desta Maquina
 int pId;									//Process Id deste cliente
+int tId;									//Thread Id da thread principal deste cliente
 int linhas;							
 int colunas;
 int mapa[MAX_LINHAS][MAX_COLUNAS];
@@ -178,6 +179,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	hInstGlobal = hInst;
 
 	pId = GetCurrentProcessId();
+	tId = GetCurrentThreadId();
 
 
 	/* ---- Definição Pipes ---- */
@@ -593,7 +595,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 	RECT area;
 	int resposta, valor;
 	int retorno_utilizadores = 0;
-	DWORD tid;
+	DWORD auxtid;
 
 	switch (messg) {
 		case WM_CREATE:		
@@ -628,9 +630,9 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
 												preparaMemoriaPartilhada();
-												pede_RegistarClienteLocal(pId);
+												pede_RegistarClienteLocal(pId,tId);
 												Sleep(1000);
-												preparaMemoriaPartilhadaResposta(pId);
+												preparaMemoriaPartilhadaResposta(pId,tId);
 												WaitForSingleObject(hEventoResposta, INFINITE);
 												ResetEvent(hEventoResposta);
 												if (vistaResposta->resposta == SUCESSO) {
@@ -700,7 +702,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					case ID_JOGO_JOGAR:			resposta = chamaIniciaJogo(&valor);
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
-													CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &tid);
+													CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &auxtid);
 												}
 												else if (resposta == INSUCESSO) {
 													if (valor == CRIADORERRADO) {
@@ -789,7 +791,7 @@ int chamaCriaJogo(int *valor) {
 
 	switch (tipoServidor)
 	{
-	case LOCAL:pede_CriaJogo(aux, pId, username1);
+	case LOCAL:pede_CriaJogo(aux, pId,tId, username1);
 			//ler Resposta e só depois validar
 		WaitForSingleObject(hEventoResposta, INFINITE);
 		ResetEvent(hEventoResposta);
@@ -807,7 +809,7 @@ int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor) {
 	
 	switch (tipoServidor)
 	{
-	case LOCAL:pede_AssociaJogo(pId, username, codigo);
+	case LOCAL:pede_AssociaJogo(pId,tId, username, codigo);
 			//ler Resposta e só depois validar
 			WaitForSingleObject(hEventoResposta, INFINITE);
 			ResetEvent(hEventoResposta);
@@ -825,7 +827,7 @@ int chamaIniciaJogo(int *valor) {
 
 	switch (tipoServidor)
 	{
-	case LOCAL:pede_IniciaJogo(pId);
+	case LOCAL:pede_IniciaJogo(pId,tId);
 		//ler Resposta e só depois validar
 		WaitForSingleObject(hEventoResposta, INFINITE);
 		ResetEvent(hEventoResposta);
@@ -902,20 +904,20 @@ BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 		case 0://apanhar tecla para a esquerda
 			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para a direita..."));
 			i++;
-			teclasjogador1.esquerda = wParam;
+			teclasjogador2.esquerda = wParam;
 			return 1;
 		case 1://apanhar tecla para a direita
 			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para cima..."));
 			i++;
-			teclasjogador1.direita = wParam;
+			teclasjogador2.direita = wParam;
 			return 1;
 		case 2://apanhar tecla para cima
 			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para baixo..."));
 			i++;
-			teclasjogador1.cima = wParam;
+			teclasjogador2.cima = wParam;
 			return 1;
 		case 3://apanhar tecla para baixo
-			teclasjogador1.baixo = wParam;
+			teclasjogador2.baixo = wParam;
 			EndDialog(hWnd, 1);
 			return 1;
 		}
