@@ -613,11 +613,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					{
 					case ID_SERVIDOR_REMOTO:	
 												DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
-												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
 												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
 									break;
 
 					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
@@ -628,12 +624,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												WaitForSingleObject(hEventoResposta, INFINITE);
 												ResetEvent(hEventoResposta);
 												if (vistaResposta->resposta == SUCESSO) {
-													MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);
-													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+													MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);													
+													EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);													
 												}
 												else if (vistaResposta->resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
@@ -645,6 +637,10 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 												if (resposta == SUCESSO) {
 													MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
 													valorCobra1 = valor;
+													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
 												}
 												else if (resposta == INSUCESSO) {
 													MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
@@ -720,12 +716,12 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 													return 0;
 									break;
 
-					case ID_SAIR40011:			
+					case ID_SAIR:			
 												if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)												
 												PostQuitMessage(0);
 									break;
 
-					case ID_INFORMA40018:		
+					case ID_AUTORIA:		
 												MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);											
 									break;
 
