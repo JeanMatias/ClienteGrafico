@@ -107,6 +107,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\x64\Debug\SnakeDLL.lib" />
+    <Library Include="..\Debug\SnakeDLL.lib" />
   </ItemGroup>
 </Project>

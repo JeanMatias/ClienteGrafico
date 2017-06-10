@@ -77,8 +77,8 @@ typedef struct {
 	int esquerda, direita, cima, baixo;
 }teclas;
 
-teclas teclasjogador1 = { 1, 2, 3, 4 };
-teclas teclasjogador2 = { 5, 6, 7, 8 };
+teclas teclasjogador1;
+teclas teclasjogador2;
 
 /* --------------------------------------------------------- */
 /*				  PROTOTIPOS FUNÇÕES						 */
@@ -97,9 +97,8 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l);
 BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK CarregaBitmaps(HWND hWnd);
+BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 DWORD WINAPI esperaActualizacao(LPVOID param);
 
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
@@ -730,11 +729,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 									break;
 
 					case ID_CONF_TECLAS_1:		
-												DialogBox(hInstGlobal, IDD_TECLAS_1, hWnd, ConfigTeclas1);												
+												DialogBox(hInstGlobal, IDD_TECLAS, hWnd, ConfigTeclas1);												
 									break;
 
 					case ID_CONF_TECLAS_2:		
-												DialogBox(hInstGlobal, IDD_TECLAS_2, hWnd, ConfigTeclas2);												
+												//DialogBox(hInstGlobal, IDD_TECLAS_2, hWnd, ConfigTeclas2);												
 									break;
 					}
 		
@@ -829,83 +828,45 @@ int chamaIniciaJogo(int *valor) {
 /*	          FUNÇÃO CONFIGURAÇÃO TECLAS                 */
 /* ----------------------------------------------------- */
 
+/*==============================================================================
+Função Configuar Teclas
+==============================================================================*/
 BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	static int i;
 	HANDLE hPipe;
 	int n;
 	char str[TAM];
+
 	SetFocus(hWnd);
-
 	switch (messg) {
-		case WM_COMMAND:
-				switch (LOWORD(wParam)) {
-				case IDCANCEL:
-					EndDialog(hWnd, 0);
-					//return 1;
-
-				case IDOK:							// esquerda, direita, cima, baixo
-					GetDlgItemText(hWnd, IDC_EDIT1, teclasjogador1.esquerda, sizeof(IDC_EDIT1));
-					GetDlgItemText(hWnd, IDC_EDIT2, teclasjogador1.direita, sizeof(IDC_EDIT2));
-					GetDlgItemText(hWnd, IDC_EDIT3, teclasjogador1.cima, sizeof(IDC_EDIT3));
-					GetDlgItemText(hWnd, IDC_EDIT4, teclasjogador1.baixo, sizeof(IDC_EDIT4));
-					EndDialog(hWnd, 0);
-					break;
-				}
-				break;
-
-		case WM_CLOSE:
-				EndDialog(hWnd, 0);
-				return 1;
-
-		case WM_INITDIALOG:
-				//SetDlgItemText(hWnd, NULL, (LPCSTR)"Pressione a tecla para se mover para a esquerda...");
-					SendDlgItemMessage(hWnd, IDC_EDIT1, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-						SetDlgItemInt(hWnd, IDC_EDIT1, teclasjogador1.esquerda, TRUE);
-					SendDlgItemMessage(hWnd, IDC_EDIT2, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-						SetDlgItemInt(hWnd, IDC_EDIT2, teclasjogador1.direita, TRUE);
-					SendDlgItemMessage(hWnd, IDC_EDIT3, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-						SetDlgItemInt(hWnd, IDC_EDIT3, teclasjogador1.cima, TRUE);
-					SendDlgItemMessage(hWnd, IDC_EDIT4, EM_LIMITTEXT, LIMITE_1POSI, NULL);
-						SetDlgItemInt(hWnd, IDC_EDIT4, teclasjogador1.baixo, TRUE);
-				return 1;
-
-		case WM_KEYDOWN:
-				//	switch (i) {
-				//	case 0://apanhar tecla para a esquerda
-				//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para a direita...");
-				//		i++;
-				//		t.esquerda = wParam;
-				//		return 1;
-				//	case 1://apanhar tecla para a direita
-				//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para cima...");
-				//		i++;
-				//		t.direita = wParam;
-				//		return 1;
-				//	case 2://apanhar tecla para cima
-				//		SetDlgItemText(hWnd, IDC_TEXTO, (LPCSTR)"Pressione a tecla para se mover para baixo...");
-				//		i++;
-				//		t.cima = wParam;
-				//		return 1;
-				//	case 3://apanhar tecla para baixo
-				//		t.baixo = wParam;
-				//		//enviar teclas ao servidor
-				//		hPipe = LigarAoPipe(PIPE_NAME, "");
-				//		sprintf(str, "keyboard");
-				//		if (!WriteFile(hPipe, &str, TAM, (LPDWORD)&n, NULL)) {
-				//			exit(1);
-				//		}
-				//		if (!WriteFile(hPipe, j.nome, TAM, (LPDWORD)&n, NULL)) {
-				//			exit(1);
-				//		}
-				//		if (!WriteFile(hPipe, &t, sizeof(struct teclas), (LPDWORD)&n, NULL)) {
-				//			exit(1);
-				//		}
-				//		CloseHandle(hPipe);
-				//		EndDialog(hWnd, 1);
-				//		return 1;
-				//	}
-				return 0;
-			}
+	case WM_INITDIALOG:
+		i = 0;
+		SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para a esquerda..."));
+		return 1;
+	case WM_KEYDOWN:
+		switch (i) {
+		case 0://apanhar tecla para a esquerda
+			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para a direita..."));
+			i++;
+			teclasjogador1.esquerda;
+			return 1;
+		case 1://apanhar tecla para a direita
+			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para cima..."));
+			i++;
+			teclasjogador1.direita;
+			return 1;
+		case 2://apanhar tecla para cima
+			SetDlgItemText(hWnd, IDC_TEXTO, TEXT("Pressione a tecla para se mover para baixo..."));
+			i++;
+			teclasjogador1.cima = wParam;
+			return 1;
+		case 3://apanhar tecla para baixo
+			teclasjogador1.baixo = wParam;
+			EndDialog(hWnd, 1);
+			return 1;
+		}
+		return 0;
+	}
 	return 0;
 }
 
@@ -984,7 +945,7 @@ void desenhaMapaNaMemoria() {
 						case TARTARUGA:
 							break;
 						default://cor normal da cobra 1
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo1, 0, 0, SRCCOPY);
 							break;
 						}
 						break;
