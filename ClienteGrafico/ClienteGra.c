@@ -49,17 +49,18 @@ int maxlinhas			=	MAX_LINHAS;
 int maxcolunas			=	MAX_COLUNAS;
 int maxobjectos			=	MAXOBJECTOS;
 
+
 //**** Variáveis de configuração de Objectos (começam com o tempo de vida por defeito) ****
-int alimento			=	ALIMENTO;
-int gelo				=	GELO;
-int granada				=	GRANADA;
-int vodka				=	VODKA;
-int oleo				=	OLEO;
-int cola				=	COLA;
-int o_vodka				=	O_VODKA;
-int o_oleo				=	O_OLEO;
-int o_cola				=	O_COLA;
-int surpresa			=	SURPRESA;
+int alimento			=	PERMANENTE;
+int gelo				=	PERMANENTE;
+int granada				=	PERMANENTE;
+int vodka				=	SEGUNDOSMAPA;
+int oleo				=	SEGUNDOSMAPA;
+int cola				=	SEGUNDOSMAPA;
+int o_vodka				=	SEGUNDOSMAPA;
+int o_oleo				=	SEGUNDOSMAPA;
+int o_cola				=	SEGUNDOSMAPA;
+int surpresa			=	SEGUNDOSMAPA;
 
 //**** Variáveis de configuração do Jogo ****
 int numJogadoresLocal	=	0;				//Num Jogadores a jogar nesta maquina
@@ -596,10 +597,10 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 	switch (messg) {
 		case WM_CREATE:		
-					//teste = CreateMutex(NULL, TRUE, NOME_MUTEX_TESTE);
-					//if (GetLastError() == ERROR_ALREADY_EXISTS) {
+					teste = CreateMutex(NULL, TRUE, NOME_MUTEX_TESTE);
+					if (GetLastError() == ERROR_ALREADY_EXISTS) {
 					//apresenta messagebox e sai do programa
-					//}
+					}
 					CarregaBitmaps(hWnd);  // Carregar BitMaps para memoria
 				break;
 
