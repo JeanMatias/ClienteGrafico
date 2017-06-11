@@ -116,8 +116,9 @@ HMENU		hMenu;
 HWND		janelaglobal;
 
 HBITMAP		hbit;
-
-HANDLE teste;	//handle para testar se o cliente é unico na máquina
+HWND		hWndRButton1;		// Handles para os radio buttons (Teclas default)
+HWND		hWndRbutton2;		//								 (Configurar Teclas)
+HANDLE		teste;				//handle para testar se o cliente é unico na máquina
 
 //*** Outros Objectos ***
 HDC	device;
@@ -665,41 +666,51 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 										EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
 										EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
 										EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+
+											// ****** CRIAR hWandle Radio Buttons *****
+										hWndRButton1 = CreateWindowEx(0,"BUTTON","Button 1",
+											WS_VISIBLE | WS_CHILD | BS_RADIOBUTTON,
+											10,10,80,20,hWnd,(HMENU)IDC_RADIO1,hInstGlobal,NULL);
+
+										hWndRbutton2 = CreateWindowEx(0, "BUTTON", "Button 2",
+											WS_VISIBLE | WS_CHILD | BS_RADIOBUTTON,
+											10, 10, 80, 20, hWnd, (HMENU)IDC_RADIO2, hInstGlobal, NULL);
+
 											// ***********
-										if(HIWORD(wParam) == BN_CLICKED)
-										{
-										switch(LOWORD(wParam)){
+										
 											case IDC_RADIO1:
 											{
-												switch (BM_GETCHECK)
-												{
+												switch (HIWORD(wParam)) {
+												case BN_CLICKED:
+													if (SendDlgItemMessage(hWnd, IDC_RADIO1, BM_GETCHECK, 0, 0) == 0)
+													{
+														SendDlgItemMessage(hWnd, IDC_RADIO1, BM_SETCHECK, 1, 0);
+														SendDlgItemMessage(hWnd, IDC_RADIO2, BM_SETCHECK, 0, 0);
+													}
 												case BST_CHECKED:
 													MessageBox(hWnd, TEXT("Vai jogar com a teclas por defeito."), TEXT("Selecção teclas do jogo."), MB_OK);
 													break;
-												case BST_INDETERMINATE:
-													break;
-												case BST_UNCHECKED:
-													break;
-												}
+												}	
 											}
 											case IDC_RADIO2:
 											{
-												switch (BM_GETCHECK)
-												{
+												switch (HIWORD(wParam))	{
+												case BN_CLICKED:
+													if (SendDlgItemMessage(hWnd, IDC_RADIO2, BM_GETCHECK, 0, 0) == 0)
+													{
+														SendDlgItemMessage(hWnd, IDC_RADIO2, BM_SETCHECK, 1, 0);
+														SendDlgItemMessage(hWnd, IDC_RADIO1, BM_SETCHECK, 0, 0);
+													}
 												case BST_CHECKED:
 													DialogBox(hInstGlobal, IDD_TECLAS1, hWnd, ConfigTeclas1);
-													break;
-												case BST_INDETERMINATE:
-													break;
-												case BST_UNCHECKED:
-													break;
-													}
+												break;																						
 												}
-											}
-										}
+											}						
+											break;								
 
-											//*********
-										}
+											
+										//*********
+									}
 									else if (resposta == INSUCESSO) {
 										MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
 									}
