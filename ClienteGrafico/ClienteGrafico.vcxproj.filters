@@ -132,8 +132,35 @@
     <Image Include="..\OBJ_Graficos\Cobra2_Corpo4.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_Cab3_Baixo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_Cab3_Direita.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_Cab3_Esquerda.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_Cab3_Cima.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_Corpo2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\obj_graficos\bitmap22.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_Corpo1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_corpo3.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\OBJ_Graficos\Cobra3_Corpo4.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Debug\SnakeDLL.lib" />
+    <Library Include="..\x64\Debug\SnakeDLL.lib" />
   </ItemGroup>
 </Project>

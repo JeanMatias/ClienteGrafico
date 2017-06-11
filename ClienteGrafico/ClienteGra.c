@@ -154,6 +154,13 @@ HDC hcobra2_corpo2;
 HDC hcobra2_corpo3;
 HDC hcobra2_corpo4;
 
+//*** Cobra 3 ***
+HDC hcobra3_cab3_esquerda, hcobra3_cab3_direita, hcobra3_cab3_cima, hcobra3_cab3_baixo;
+HDC hcobra3_corpo1;
+HDC hcobra3_corpo2;
+HDC hcobra3_corpo3;
+HDC hcobra3_corpo4;
+
 /* ============================================================================ */
 /*					Programa base (esqueleto) para aplicações Windows			*/
 /*																				*/																	
@@ -599,10 +606,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 	switch (messg) {
 		case WM_CREATE:		
-					teste = CreateMutex(NULL, TRUE, NOME_MUTEX_TESTE);
-					if (GetLastError() == ERROR_ALREADY_EXISTS) {
-					//apresenta messagebox e sai do programa
-					}
+					//teste = CreateMutex(NULL, TRUE, NOME_MUTEX_TESTE);
+					//if (GetLastError() == ERROR_ALREADY_EXISTS) {
+					//	MessageBox(hWnd, TEXT("Já foi criado o jogo !"), TEXT("ERRO"), MB_YESNO == IDYES);
+					////apresenta messagebox e sai do programa
+					//}
 					CarregaBitmaps(hWnd);  // Carregar BitMaps para memoria
 				break;
 
@@ -618,158 +626,182 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 		case WM_COMMAND:			
 			switch (wParam)
-					{
-					case ID_SERVIDOR_REMOTO:	
-												DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
-												EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-												EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+			{					
+			case ID_SERVIDOR_REMOTO:DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
+									EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+									EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+									EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+									EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+									EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
 									break;
 
-					case ID_SERVIDOR_LOCAL:		tipoServidor = LOCAL;
-												preparaMemoriaPartilhada();
-												pede_RegistarClienteLocal(pId,tId);
-												Sleep(1000);
-												preparaMemoriaPartilhadaResposta(pId,tId);
-												WaitForSingleObject(hEventoResposta, INFINITE);
-												ResetEvent(hEventoResposta);
-												if (vistaResposta->resposta == SUCESSO) {
-													MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);													
-													EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
-												}
-												else if (vistaResposta->resposta == INSUCESSO) {
-													MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
-												}
+			case ID_SERVIDOR_LOCAL:tipoServidor = LOCAL;
+									preparaMemoriaPartilhada();
+									pede_RegistarClienteLocal(pId,tId);
+									Sleep(1000);
+									preparaMemoriaPartilhadaResposta(pId,tId);
+									WaitForSingleObject(hEventoResposta, INFINITE);
+									ResetEvent(hEventoResposta);
+									if (vistaResposta->resposta == SUCESSO) {
+										MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);													
+										EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+										EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+										EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+										EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+										EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+										}
+										else if (vistaResposta->resposta == INSUCESSO) {
+											MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
+										}
 									break;
 
-					case ID_JOGO_CRIAR:			DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-												resposta = chamaCriaJogo(&valor);
-												if (resposta == SUCESSO) {
-													MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
-													valorCobra1 = valor;
-													EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-													EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+				case ID_JOGO_CRIAR:	DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
+								{
+									resposta = chamaCriaJogo(&valor);
+									if (resposta == SUCESSO) {
+										MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), BS_AUTOCHECKBOX | MB_OK);
+										valorCobra1 = valor;
+										EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+										EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+										EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+										EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+											// ***********
+										if(HIWORD(wParam) == BN_CLICKED)
+										{
+										switch(LOWORD(wParam)){
+											case IDC_RADIO1:
+											{
+												switch (BM_GETCHECK)
+												{
+												case BST_CHECKED:
+													MessageBox(hWnd, TEXT("Vai jogar com a teclas por defeito."), TEXT("Selecção teclas do jogo."), MB_OK);
+													break;
+												case BST_INDETERMINATE:
+													break;
+												case BST_UNCHECKED:
+													break;
 												}
-												else if (resposta == INSUCESSO) {
-													MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+											}
+											case IDC_RADIO2:
+											{
+												switch (BM_GETCHECK)
+												{
+												case BST_CHECKED:
+													DialogBox(hInstGlobal, IDD_TECLAS1, hWnd, ConfigTeclas1);
+													break;
+												case BST_INDETERMINATE:
+													break;
+												case BST_UNCHECKED:
+													break;
+													}
 												}
+											}
+										}
+
+											//*********
+										}
+									else if (resposta == INSUCESSO) {
+										MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+									}
+									break;
+								}
+
+			case ID_JOGO_ASSOCIAR:if (numJogadoresLocal == 0) {
+									DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
+									resposta = 	chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1,&valor);
+									if (resposta == SUCESSO) {
+										MessageBox(hWnd, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
+										valorCobra1 = valor;
+										numJogadoresLocal++;
+									}
+									else if (resposta == INSUCESSO) {
+										if (valor == AGORANAO) {
+										MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+									}
+									else if (valor == JOGOCHEIO) {
+										MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+											}
+										}
+									}
+									else if (numJogadoresLocal == 1) {
+										DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
+											resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
+											if (resposta == SUCESSO) {
+												MessageBox(hWnd, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
+												valorCobra2 = valor;
+												numJogadoresLocal++;
+											}
+											else if (resposta == INSUCESSO) {
+												if (valor == AGORANAO) {
+												MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+											}
+											else if (valor == JOGOCHEIO) {
+												MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+												}
+											}
+										}
 									break;
 
-					case ID_JOGO_ASSOCIAR:		if (numJogadoresLocal == 0) {
-													DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-													resposta = 	chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1,&valor);
-													if (resposta == SUCESSO) {
-														MessageBox(hWnd, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
-														valorCobra1 = valor;
-														numJogadoresLocal++;
-													}
-													else if (resposta == INSUCESSO) {
-														if (valor == AGORANAO) {
-															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-														}
-														else if (valor == JOGOCHEIO) {
-															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
-														}
-													}
-												}
-												else if (numJogadoresLocal == 1) {
-													DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
-													resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
-													if (resposta == SUCESSO) {
-														MessageBox(hWnd, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
-														valorCobra2 = valor;
-														numJogadoresLocal++;
-													}
-													else if (resposta == INSUCESSO) {
-														if (valor == AGORANAO) {
-															MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-														}
-														else if (valor == JOGOCHEIO) {
-															MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
-														}
-													}
-												}
-									break;
-
-					case ID_JOGO_JOGAR:			resposta = chamaIniciaJogo(&valor);
-												if (resposta == SUCESSO) {
-													MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
-													CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &auxtid);
-												}
-												else if (resposta == INSUCESSO) {
-													if (valor == CRIADORERRADO) {
-														MessageBox(hWnd, TEXT("Apenas o cliente que criou o jogo pode iniciar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
-													}
-													if (valor == AGORANAO) {
-														MessageBox(hWnd, TEXT("Deve iniciar o jogo só depois de criar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
-													}
-												}						
+			case ID_JOGO_JOGAR:	resposta = chamaIniciaJogo(&valor);
+								if (resposta == SUCESSO) {
+									MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
+											CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &auxtid);
+										}
+										else if (resposta == INSUCESSO) {
+										if (valor == CRIADORERRADO) {
+											MessageBox(hWnd, TEXT("Apenas o cliente que criou o jogo pode iniciar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+										}
+										if (valor == AGORANAO) {
+											MessageBox(hWnd, TEXT("Deve iniciar o jogo só depois de criar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+											}
+										}						
 									break;	
 
-					case ID_CONFIGURAR_TABULEIRO:	
-												DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
+			case ID_CONFIGURAR_TABULEIRO: DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
 													
 									break;
 
-					case ID_CONFIGURAR_OBJECTOS:	
-												DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
+			case ID_CONFIGURAR_OBJECTOS: DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
 													
 									break;
 
-					case ID_EDITARJPGS:			
-												if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi)) {														
-													return 1;
-												}
-												   else
-													return 0;
+			case ID_EDITARJPGS:	if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi)) {														
+									return 1;
+								}
+								else
+									return 0;
 									break;
 
-					case ID_SAIR:			
-												if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)												
-												PostQuitMessage(0);
+			case ID_SAIR:if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)												
+							PostQuitMessage(0);
 									break;
 
-					case ID_AUTORIA:		
-												MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);											
+			case ID_AUTORIA:MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);											
 									break;
 
-					case ID_AJUDA_AJUDA:		
-												MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);												
+			case ID_AJUDA_AJUDA:MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);												
 									break;
 
-					case ID_CONF_TECLAS_1:		
-												DialogBox(hInstGlobal, IDD_TECLAS1, hWnd, ConfigTeclas1);												
+			case ID_CONF_TECLAS_1:DialogBox(hInstGlobal, IDD_TECLAS1, hWnd, ConfigTeclas1);												
 									break;
 
-					case ID_CONF_TECLAS_2:		
-												DialogBox(hInstGlobal, IDD_TECLAS2, hWnd, ConfigTeclas2);												
+			case ID_CONF_TECLAS_2:DialogBox(hInstGlobal, IDD_TECLAS2, hWnd, ConfigTeclas2);												
 									break;
 					}
 		
-		case WM_ERASEBKGND:
+			case WM_ERASEBKGND:
 
 				break;
 
-		case WM_PAINT:
+			case WM_PAINT:
 				device = BeginPaint(hWnd, &pintar);
 				BitBlt(device, 0, 0, maxX, maxY, memoriajanela, 0, 0, SRCCOPY);
 				EndPaint(hWnd, &pintar);								
 				break;
 
-		case WM_KEYUP:
-					
-				break;
-						
-		default:
-				
+			case WM_KEYUP:					
+				break;						
+			default:				
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
 	}
 	return(0);
@@ -975,7 +1007,7 @@ void desenhaMapaNaMemoria() {
 				aux = mapa[y][x] / 10;
 				dezenas = aux % 10;
 				centenas = aux / 10;
-				if (centenas == valorCobra1) {//a cobra do jogador 1 está na posição
+				if (centenas == valorCobra1) {	//a cobra do jogador 1 está na posição ***
 					switch (unidades)
 					{//se tiver direção é cabeça senão é corpo da cobra
 					case CIMA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_cab1_cima, 0, 0, SRCCOPY);
@@ -989,10 +1021,13 @@ void desenhaMapaNaMemoria() {
 					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
 						switch (dezenas) {
 						case BEBADO:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo4, 0, 0, SRCCOPY);
 							break;
 						case LEBRE:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo3, 0, 0, SRCCOPY);
 							break;
 						case TARTARUGA:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo2, 0, 0, SRCCOPY);
 							break;
 						default://cor normal da cobra 1
 							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo1, 0, 0, SRCCOPY);
@@ -1001,17 +1036,21 @@ void desenhaMapaNaMemoria() {
 						break;
 					}					
 				}
-				else if (centenas == valorCobra2) {//a cobra do jogador 2 está na posição
+				else if (centenas == valorCobra2) {	//a cobra do jogador 2 está na posição ***
 					switch (dezenas) {
 					case BEBADO:switch (unidades)
 					{//se tiver direção é cabeça senão é corpo da cobra
 					case CIMA:
+						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_cima, 0, 0, SRCCOPY);
 						break;
 					case BAIXO:
+						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_baixo, 0, 0, SRCCOPY);
 						break;
 					case ESQUERDA:
+						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_esquerda, 0, 0, SRCCOPY);
 						break;
 					case DIREITA:
+						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_direita, 0, 0, SRCCOPY);
 						break;
 					default:
 						break;
@@ -1215,72 +1254,122 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 					SelectObject(hcobra2_corpo4, hbit);
 					DeleteObject(hbit);
 
+	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - COBRA 3 ******/
+					// Criar janela virtual para cobra 3 cabeça cima
+					hcobra3_cab3_cima = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA3_CIMA));
+					SelectObject(hcobra3_cab3_cima, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 3 cabeça baixo
+					hcobra3_cab3_baixo = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA3_BAIXO));
+					SelectObject(hcobra3_cab3_baixo, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 3 cabeça esquerda
+					hcobra3_cab3_esquerda = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA3_ESQUERDA));
+					SelectObject(hcobra3_cab3_esquerda, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 3 cabeça direita
+					hcobra3_cab3_direita = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CABCOBRA3_DIREITA));
+					SelectObject(hcobra3_cab3_direita, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 3 corpo
+					hcobra3_corpo1 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3));
+					SelectObject(hcobra3_corpo1, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 3 corpo ==> LENTA
+					hcobra3_corpo2 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3_2));
+					SelectObject(hcobra3_corpo2, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 3 corpo ==> RAPIDA
+					hcobra3_corpo3 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3_3));
+					SelectObject(hcobra3_corpo3, hbit);
+					DeleteObject(hbit);
+
+					// Criar janela virtual para cobra 3 corpo ==> BEBADA
+					hcobra3_corpo4 = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3_4));
+					SelectObject(hcobra3_corpo4, hbit);
+					DeleteObject(hbit);
+
+
 	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - OBJETOS ******/
-	// Criar janela virtual para Comida Rato
-	hcomida = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_ALIMENTO));
-	SelectObject(hcomida, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para Comida Rato
+					hcomida = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_ALIMENTO));
+					SelectObject(hcomida, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para gelo
-	hgelo = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GELO));
-	SelectObject(hgelo, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para gelo
+					hgelo = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GELO));
+					SelectObject(hgelo, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para granada
-	hgranada = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GRANADA));
-	SelectObject(hgranada, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para granada
+					hgranada = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_GRANADA));
+					SelectObject(hgranada, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para Vodka
-	hvodka = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VODKA));
-	SelectObject(hvodka, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para Vodka
+					hvodka = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VODKA));
+					SelectObject(hvodka, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para o_vodka
-	ho_vodka = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_VODKA));
-	SelectObject(ho_vodka, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para o_vodka
+					ho_vodka = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_VODKA));
+					SelectObject(ho_vodka, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para oleo
-	holeo = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_OLEO));
-	SelectObject(holeo, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para oleo
+					holeo = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_OLEO));
+					SelectObject(holeo, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para o_oleo
-	ho_oleo = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_OLEO));
-	SelectObject(ho_oleo, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para o_oleo
+					ho_oleo = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_OLEO));
+					SelectObject(ho_oleo, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para Cola
-	hcola = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COLA));
-	SelectObject(hcola, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para Cola
+					hcola = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_COLA));
+					SelectObject(hcola, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para O_Cola
-	ho_cola = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_COLA));
-	SelectObject(ho_cola, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para O_Cola
+					ho_cola = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_O_COLA));
+					SelectObject(ho_cola, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para Surpresa Vida
-	surpresa_vida = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VIDA));
-	SelectObject(surpresa_vida, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para Surpresa Vida
+					surpresa_vida = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_VIDA));
+					SelectObject(surpresa_vida, hbit);
+					DeleteObject(hbit);
 
-	// Criar janela virtual para Surpresa Prenda
-	hprenda = CreateCompatibleDC(device);
-	hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PRENDA));
-	SelectObject(hprenda, hbit);
-	DeleteObject(hbit);
+					// Criar janela virtual para Surpresa Prenda
+					hprenda = CreateCompatibleDC(device);
+					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_PRENDA));
+					SelectObject(hprenda, hbit);
+					DeleteObject(hbit);
 
 	/* Igual janela */
 	janelaglobal = hWnd;
