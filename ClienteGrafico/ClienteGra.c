@@ -1,165 +1,4 @@
-#include <windows.h>
-#include <tchar.h>
-#include "resource.h"
-#include "..\..\SnakeDLL\SnakeDLL\SnakeDLL.h"
-
-
-/* ======================================================================= */
-/*					ZONA DE DECLARAÇÃO DE VARIAVEIS E FUNÇÕES		       */
-/* ======================================================================= */
-
-
-/* -----------------------------------------------------*/
-/*               #DEFINES LOCAIS                        */
-/* -----------------------------------------------------*/
-#define MAX				256
-#define TAM				6
-#define LIMITE_1POSI	1
-#define LIMITE_2POSI	2
-#define LIMITE_3POSI	3
-
-
-/* ----------------------------------------------------- */
-/*              VARIÁVEIS GLOBAIS						 */
-/* ----------------------------------------------------- */
-
-static int maxX;
-static int maxY;
-
-TCHAR *szProgName = TEXT("Snake");
-TCHAR executavel[MAX] = TEXT("mspaint.exe");
-//TCHAR executavel[MAX] = TEXT("%windir%\system32\mspaint.exe");
-
-PROCESS_INFORMATION pi;
-STARTUPINFO si;
-
-int tipoServidor		=	0;			//Se está ligado a um servidor local ou remoto
-
-//**** Variáveis de configuração do Jogo (começam com o valor por defeito)****
-int cobrasAutomaticas	=	NUMAUTOSNAKE;
-int colunasConfig		=	COLUNAS;
-int linhasConfig		=	LINHAS;
-int numJogadores		=	NUMJOGADORES;
-int numObjectos			=	NUMOBJETOS;
-int tamanhoSnakes		=	TAMANHOSNAKE;
-int maxjogadores		=	MAXJOGADORES;
-int minlinhas			=	MIN_LINHAS;
-int mincolunas			=	MIN_COLUNAS;
-int maxlinhas			=	MAX_LINHAS;
-int maxcolunas			=	MAX_COLUNAS;
-int maxobjectos			=	MAXOBJECTOS;
-
-
-//**** Variáveis de configuração de Objectos (começam com o tempo de vida por defeito) ****
-int alimento			=	PERMANENTE;
-int gelo				=	PERMANENTE;
-int granada				=	PERMANENTE;
-int vodka				=	SEGUNDOSMAPA;
-int oleo				=	SEGUNDOSMAPA;
-int cola				=	SEGUNDOSMAPA;
-int o_vodka				=	SEGUNDOSMAPA;
-int o_oleo				=	SEGUNDOSMAPA;
-int o_cola				=	SEGUNDOSMAPA;
-int surpresa			=	SEGUNDOSMAPA;
-
-//**** Variáveis de configuração do Jogo ****
-int numJogadoresLocal	=	0;				//Num Jogadores a jogar nesta maquina
-int valorCobra1			=	0;				//valor da cobra do jogador 1 desta maquina
-int valorCobra2			=	0;				//valor da cobra do jogador 2 desta maquina
-TCHAR username1[SIZE_USERNAME];				//Nome do Jogador 1 desta Maquina
-TCHAR username2[SIZE_USERNAME];				//Nome do Jogador 2 desta Maquina
-int pId;									//Process Id deste cliente
-int tId;									//Thread Id da thread principal deste cliente
-int linhas;							
-int colunas;
-int mapa[MAX_LINHAS][MAX_COLUNAS];
-
-//**** Estrutura de teclas ****
-typedef struct {
-	int esquerda, direita, cima, baixo;
-}teclas;
-
-teclas teclasjogador1;
-teclas teclasjogador2;
-
-/* --------------------------------------------------------- */
-/*				  PROTOTIPOS FUNÇÕES						 */
-/* --------------------------------------------------------- */
-
-int chamaCriaJogo(int *valor);
-int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor);
-void desenhaMapaNaMemoria();
-
-/* --------------------------------------------------------- */
-/*  PROTOTIPOS FUNÇÕES DE TRATAMENTO DE EVENTOS DE JANELAS	 */
-/* --------------------------------------------------------- */
-
-BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l);
-BOOL CALLBACK CarregaBitmaps(HWND hWnd);
-BOOL CALLBACK ConfigTeclas1(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
-DWORD WINAPI esperaActualizacao(LPVOID param);
-
-LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
-
-
-/* --------------------------------------------------------- */
-/*                   HANDLES GLOBAIS                         */
-/* --------------------------------------------------------- */
-
-HINSTANCE	hInstGlobal;
-HMENU		hMenu;
-HWND		janelaglobal;
-
-HBITMAP		hbit;
-
-HANDLE teste;	//handle para testar se o cliente é unico na máquina
-
-//*** Outros Objectos ***
-HDC	device;
-HDC memoriajanela;
-HDC hparede;
-HDC hfundo;
-
-//*** Objectos ***
-HDC halimento;
-HDC hgelo;
-HDC hgranada;
-HDC hvodka;
-HDC holeo;
-HDC hcola;
-HDC ho_vodka;
-HDC ho_oleo;
-HDC ho_cola;
-HDC surpresa_vida;
-HDC hcomida;
-HDC hmouse;
-HDC hprenda;
-
-//*** Cobra 1 ***
-HDC hcobra1_cab1_esquerda, hcobra1_cab1_direita, hcobra1_cab1_cima, hcobra1_cab1_baixo;
-HDC hcobra1_corpo1;
-HDC hcobra1_corpo2;
-HDC hcobra1_corpo3;
-HDC hcobra1_corpo4;
-
-//*** Cobra 2 ***
-HDC hcobra2_cab2_esquerda, hcobra2_cab2_direita, hcobra2_cab2_cima, hcobra2_cab2_baixo;
-HDC hcobra2_corpo1;
-HDC hcobra2_corpo2;
-HDC hcobra2_corpo3;
-HDC hcobra2_corpo4;
-
-//*** Cobra 3 ***
-HDC hcobra3_cab3_esquerda, hcobra3_cab3_direita, hcobra3_cab3_cima, hcobra3_cab3_baixo;
-HDC hcobra3_corpo1;
-HDC hcobra3_corpo2;
-HDC hcobra3_corpo3;
-HDC hcobra3_corpo4;
+#include "ClienteGra.h"
 
 /* ============================================================================ */
 /*					Programa base (esqueleto) para aplicações Windows			*/
@@ -373,48 +212,59 @@ BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l) {
 
 BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
 	int aux1, aux2, aux3, aux4, aux5, aux6;
+	BOOL correuBem = TRUE;
 	switch (m) {
 	case WM_COMMAND:
 		switch (LOWORD(w))
 		{
 		case IDCANCEL:
 			EndDialog(h, 0);
-			//return 1;
+			return 0;
 		case IDOK:
 			aux1 = GetDlgItemInt(h, IDC_EDIT1, NULL, TRUE);
 			aux2 = GetDlgItemInt(h, IDC_EDIT2, NULL, TRUE);
-				if (aux1 > MAX_LINHAS || aux1 < MIN_LINHAS || aux2 > MAX_COLUNAS || aux2 < MIN_COLUNAS) {
-					MessageBox(h, TEXT("LINHAS: Máximo 40 E Minimo 10 \n\nCOLUNAS: Máximo 80 E Minimo 10"), TEXT("ATENÇÂO"), MB_OK);
-				}
-				else {
-					colunasConfig = aux1;
-					linhasConfig = aux2;
-				}
+			if (aux1 > MAX_LINHAS || aux1 < MIN_LINHAS || aux2 > MAX_COLUNAS || aux2 < MIN_COLUNAS) {
+				MessageBox(h, TEXT("LINHAS: Máximo 30 E Minimo 15 \n\nCOLUNAS: Máximo 60 E Minimo 15"), TEXT("ATENÇÂO"), MB_OK);
+				correuBem = FALSE;
+			}
+			else {
+				colunasConfig = aux1;
+				linhasConfig = aux2;
+			}
 			aux3 = GetDlgItemInt(h, IDC_EDIT3, NULL, TRUE);
-				if (aux3 < TAMANHOSNAKE || aux3 > 6)
-					MessageBox(h, TEXT("Tamanho Configurável das Cobras: Compreendido entre 3 e 6"), TEXT("ATENÇÂO"), MB_OK);
-				else{
-					tamanhoSnakes = aux3;			
-				}
+			if (aux3 < TAMANHOSNAKE || aux3 > 6) {
+				MessageBox(h, TEXT("Tamanho Configurável das Cobras: Compreendido entre 3 e 6"), TEXT("ATENÇÂO"), MB_OK);
+				correuBem = FALSE;
+			}	
+			else{
+				tamanhoSnakes = aux3;			
+			}
 			aux4 = GetDlgItemInt(h, IDC_EDIT4, NULL, TRUE);
-				if (aux4 < NUMAUTOSNAKE || aux4 > 6)
-					MessageBox(h, TEXT("Número Cobras Automáticas: Compreendido entre 1 e 6"), TEXT("ATENÇÃO"), MB_OK);
-				else {
-					cobrasAutomaticas = aux4;
-				}
+			if (aux4 < NUMAUTOSNAKE || aux4 > 6) {
+				MessageBox(h, TEXT("Número Cobras Automáticas: Compreendido entre 1 e 6"), TEXT("ATENÇÃO"), MB_OK);
+				correuBem = FALSE;
+			}				
+			else {
+				cobrasAutomaticas = aux4;
+			}
 			aux5 = GetDlgItemInt(h, IDC_EDIT5, NULL, TRUE);
-				if (aux5 > MAXOBJECTOS)
-					MessageBox(h, TEXT("Número Máximo de Objectos: Limite é 30"), TEXT("ATENÇÃO"), MB_OK);
-				else {
-					numObjectos = aux5;
-				}
+			if (aux5 > MAXOBJECTOS) {
+				MessageBox(h, TEXT("Número Máximo de Objectos: Limite é 30"), TEXT("ATENÇÃO"), MB_OK);
+				correuBem = FALSE;
+			}	
+			else {
+				numObjectos = aux5;
+			}
 			aux6 = GetDlgItemInt(h, IDC_EDIT6, NULL, TRUE);
-				if (aux6 < NUMJOGADORES || aux6 > MAXJOGADORES)
-					MessageBox(h, TEXT("Número de Jogadores: Compreendido entre 1 e 4"), TEXT("ATENÇÃO"), MB_OK);
-				else {
-					numJogadores = aux6;
-				}
-				//EndDialog(h, 0);
+			if (aux6 < NUMJOGADORES || aux6 > MAXJOGADORES) {
+				MessageBox(h, TEXT("Número de Jogadores: Compreendido entre 1 e 4"), TEXT("ATENÇÃO"), MB_OK);
+				correuBem = FALSE;
+			}	
+			else {
+				numJogadores = aux6;
+			}
+			if(correuBem==TRUE)
+				EndDialog(h, 0);
 			break;
 		}
 		break;
@@ -536,29 +386,42 @@ BOOL CALLBACK ConfiguraObjectos(HWND h, UINT m, WPARAM w, LPARAM l) {
 /* ----------------------------------------------------- */
 
 BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l) {
+	static int escolha;
 	switch (m) {
 	case WM_COMMAND:
-		switch (LOWORD(w)) {
-		case IDCANCEL:
-			EndDialog(h, 0);
-			return 1;
-		case IDOK:
-			GetDlgItemText(h, IDC_EDIT23, username1, sizeof(IDC_EDIT23));
-			EndDialog(h, 0);
-			return 1;
-		}
+			switch (LOWORD(w)) {
+			case IDC_RADIO1:escolha = 1;
+				break;
+			case IDC_RADIO2:escolha = 2;
+				break;
+			case IDCANCEL:
+				EndDialog(h, INSUCESSO);
+				return 1;
+			case IDOK:
+				GetDlgItemText(h, IDC_EDIT23, username1, sizeof(IDC_EDIT23));
+				EndDialog(h, SUCESSO);
+				if (escolha == 1) {
+					teclasjogador1.baixo = 83;
+					teclasjogador1.cima = 87;
+					teclasjogador1.esquerda = 65;
+					teclasjogador1.direita = 68;
+					MessageBox(janelaglobal, TEXT("Vai jogar com a teclas por defeito. (W,A,S,D)"), TEXT("Selecção teclas do jogo."), MB_OK);
+				}
+				else if(escolha == 2)
+					DialogBox(hInstGlobal, IDD_TECLAS1, janelaglobal, ConfigTeclas1);
+				return 1;
+			}
 		return 1;
-	case WM_CLOSE:
-		
-		EndDialog(h, 1);
-		return TRUE;
 	case WN_CANCEL:
-		EndDialog(h, 0);
+		EndDialog(h, INSUCESSO);
 		return 1;
 	case WM_INITDIALOG:
+		CheckRadioButton(h, IDC_RADIO1, IDC_RADIO2, IDC_RADIO1);
+		escolha = 1;
 		SendDlgItemMessage(h, IDC_EDIT23, EM_LIMITTEXT, SIZE_USERNAME, NULL);
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -567,25 +430,38 @@ BOOL CALLBACK Pede_NomeJogador1(HWND h, UINT m, WPARAM w, LPARAM l) {
 /* ----------------------------------------------------- */
 
 BOOL CALLBACK Pede_NomeJogador2(HWND h, UINT m, WPARAM w, LPARAM l) {
+	static int escolha;
 	switch (m) {
 	case WM_COMMAND:
 		switch (LOWORD(w)) {
+		case IDC_RADIO1:escolha = 1;
+			break;
+		case IDC_RADIO2:escolha = 2;
+			break;
 		case IDCANCEL:
-			EndDialog(h, 0);
+			EndDialog(h, INSUCESSO);
 			return 1;
 		case IDOK:
 			GetDlgItemText(h, IDC_EDIT24, username2, sizeof(IDC_EDIT24));
-			EndDialog(h, 0);
+			EndDialog(h, SUCESSO);
+			if (escolha == 1) {
+				teclasjogador1.baixo = 98;
+				teclasjogador1.cima = 104;
+				teclasjogador1.esquerda = 100;
+				teclasjogador1.direita = 102;
+				MessageBox(janelaglobal, TEXT("Vai jogar com a teclas por defeito. (8,4,2,6 do teclado numerico)"), TEXT("Selecção teclas do jogo."), MB_OK);
+			}	
+			else if (escolha == 2)
+				DialogBox(hInstGlobal, IDD_TECLAS2, janelaglobal, ConfigTeclas2);
 			return 1;
 		}
 		return 1;
-	case WM_CLOSE:
-		EndDialog(h, 1);
-		return TRUE;
 	case WN_CANCEL:
-		EndDialog(h, 0);
+		EndDialog(h, INSUCESSO);
 		return 1;
 	case WM_INITDIALOG:
+		CheckRadioButton(h, IDC_RADIO1, IDC_RADIO2, IDC_RADIO1);
+		escolha = 1;
 		SendDlgItemMessage(h, IDC_EDIT24, EM_LIMITTEXT, SIZE_USERNAME, NULL);
 		return 1;
 	}
@@ -606,202 +482,112 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 	switch (messg) {
 		case WM_CREATE:		
-					//teste = CreateMutex(NULL, TRUE, NOME_MUTEX_TESTE);
-					//if (GetLastError() == ERROR_ALREADY_EXISTS) {
-					//	MessageBox(hWnd, TEXT("Já foi criado o jogo !"), TEXT("ERRO"), MB_YESNO == IDYES);
-					////apresenta messagebox e sai do programa
-					//}
-					CarregaBitmaps(hWnd);  // Carregar BitMaps para memoria
+					teste = CreateMutex(NULL, TRUE, NOME_MUTEX_TESTE);
+					if (GetLastError() == ERROR_ALREADY_EXISTS) {
+						MessageBox(hWnd, TEXT("Já existe um cliente a correr! Este vai fechar."), TEXT("ERRO"), MB_OK);
+						PostQuitMessage(0);
+						return 1;
+					}
+					CarregaBitmaps(hWnd);// Carregar BitMaps para memoria
+					return 1;
 				break;
 
-		case WM_CLOSE:				
-					if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-					{
-					//fechaMemoriaPartilhada();
+		case WM_ERASEBKGND:	break; //para eliminar a cintilação da janela
+
+		case WM_PAINT:
+			device = BeginPaint(hWnd, &pintar);
+			BitBlt(device, 0, 0, maxX, maxY, memoriajanela, 0, 0, SRCCOPY);
+			EndPaint(hWnd, &pintar);
+			break;
+
+		case WM_CLOSE:
+			if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+			{
+				if (tipoServidor == LOCAL) {
+					pede_Sair(pId, tId);
 					fechaMemoriaPartilhadaGeral();
 					fechaMemoriaPartilhadaResposta();
-					PostQuitMessage(0);
-					}
-				break;
+				}
 
+				PostQuitMessage(0);
+			}
+			return 1;
+			break;
+/*==========================================================================================================================
+													Mensagens do Menu:
+  ==========================================================================================================================*/
 		case WM_COMMAND:			
 			switch (wParam)
 			{					
-			case ID_SERVIDOR_REMOTO:DialogBox(hInstGlobal, IDD_DIALOG3, hWnd, IndicaIPRemoto);
-									EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-									EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-									EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-									EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-									EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+			case ID_SERVIDOR_REMOTO:CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ligaServidorRemoto, (LPVOID)NULL, 0, &auxtid);
 									break;
-
-			case ID_SERVIDOR_LOCAL:tipoServidor = LOCAL;
-									preparaMemoriaPartilhada();
-									pede_RegistarClienteLocal(pId,tId);
-									Sleep(1000);
-									preparaMemoriaPartilhadaResposta(pId,tId);
-									WaitForSingleObject(hEventoResposta, INFINITE);
-									ResetEvent(hEventoResposta);
-									if (vistaResposta->resposta == SUCESSO) {
-										MessageBox(hWnd, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);													
-										EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-										EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-										EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-										EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-										EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
-										}
-										else if (vistaResposta->resposta == INSUCESSO) {
-											MessageBox(hWnd, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
-										}
-									break;
-
-				case ID_JOGO_CRIAR:	DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-								{
-									resposta = chamaCriaJogo(&valor);
-									if (resposta == SUCESSO) {
-										MessageBox(hWnd, TEXT("Jogo Criado"), TEXT("SUCESSO"), BS_AUTOCHECKBOX | MB_OK);
-										valorCobra1 = valor;
-										EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-										EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-										EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-										EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
-											// ***********
-										if(HIWORD(wParam) == BN_CLICKED)
-										{
-										switch(LOWORD(wParam)){
-											case IDC_RADIO1:
-											{
-												switch (BM_GETCHECK)
-												{
-												case BST_CHECKED:
-													MessageBox(hWnd, TEXT("Vai jogar com a teclas por defeito."), TEXT("Selecção teclas do jogo."), MB_OK);
-													break;
-												case BST_INDETERMINATE:
-													break;
-												case BST_UNCHECKED:
-													break;
-												}
-											}
-											case IDC_RADIO2:
-											{
-												switch (BM_GETCHECK)
-												{
-												case BST_CHECKED:
-													DialogBox(hInstGlobal, IDD_TECLAS1, hWnd, ConfigTeclas1);
-													break;
-												case BST_INDETERMINATE:
-													break;
-												case BST_UNCHECKED:
-													break;
-													}
-												}
-											}
-										}
-
-											//*********
-										}
-									else if (resposta == INSUCESSO) {
-										MessageBox(hWnd, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-									}
-									break;
-								}
-
-			case ID_JOGO_ASSOCIAR:if (numJogadoresLocal == 0) {
-									DialogBox(hInstGlobal, IDD_DIALOG5, hWnd, Pede_NomeJogador1);
-									resposta = 	chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1,&valor);
-									if (resposta == SUCESSO) {
-										MessageBox(hWnd, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
-										valorCobra1 = valor;
-										numJogadoresLocal++;
-									}
-									else if (resposta == INSUCESSO) {
-										if (valor == AGORANAO) {
-										MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-									}
-									else if (valor == JOGOCHEIO) {
-										MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
-											}
-										}
-									}
-									else if (numJogadoresLocal == 1) {
-										DialogBox(hInstGlobal, IDD_DIALOG6, hWnd, Pede_NomeJogador2);
-											resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
-											if (resposta == SUCESSO) {
-												MessageBox(hWnd, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
-												valorCobra2 = valor;
-												numJogadoresLocal++;
-											}
-											else if (resposta == INSUCESSO) {
-												if (valor == AGORANAO) {
-												MessageBox(hWnd, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
-											}
-											else if (valor == JOGOCHEIO) {
-												MessageBox(hWnd, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
-												}
-											}
-										}
-									break;
-
-			case ID_JOGO_JOGAR:	resposta = chamaIniciaJogo(&valor);
-								if (resposta == SUCESSO) {
-									MessageBox(hWnd, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
-											CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &auxtid);
-										}
-										else if (resposta == INSUCESSO) {
-										if (valor == CRIADORERRADO) {
-											MessageBox(hWnd, TEXT("Apenas o cliente que criou o jogo pode iniciar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
-										}
-										if (valor == AGORANAO) {
-											MessageBox(hWnd, TEXT("Deve iniciar o jogo só depois de criar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
-											}
-										}						
-									break;	
-
+			case ID_SERVIDOR_LOCAL:	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ligaServidorLocal, (LPVOID)NULL, 0, &auxtid);
+				break;
+			case ID_JOGO_CRIAR:	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)criaJogo, (LPVOID)NULL, 0, &auxtid);
+				break;
+			case ID_JOGO_ASSOCIAR:CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)associaJogo, (LPVOID)NULL, 0, &auxtid);
+				break;
+			case ID_JOGO_JOGAR:	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)iniciaJogo, (LPVOID)NULL, 0, &auxtid);
+				break;
 			case ID_CONFIGURAR_TABULEIRO: DialogBox(hInstGlobal, IDD_DIALOG1, hWnd, ConfiguraJogo);
-													
-									break;
-
+				break;
 			case ID_CONFIGURAR_OBJECTOS: DialogBox(hInstGlobal, IDD_DIALOG4, hWnd, ConfiguraObjectos);
-													
-									break;
-
+				break;
 			case ID_EDITARJPGS:	if (CreateProcess(NULL, executavel, NULL, NULL, 0, 0, NULL, NULL, &si, &pi)) {														
 									return 1;
 								}
 								else
 									return 0;
-									break;
-
+								break;
 			case ID_SAIR:if (MessageBox(hWnd, TEXT("Quer mesmo sair?"), TEXT("Snake Multiplayer."), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)												
 							PostQuitMessage(0);
-									break;
-
+				break;
 			case ID_AUTORIA:MessageBoxA(hWnd, "\n\tSO2\n\n\nTrabalho Prático 2016/2017\n\nPaulo Alves - Aluno nº 21170449\n\t&\nJean Matias - Aluno nº 21200943 \n", "Snake Multiplayer", MB_OK);											
-									break;
-
+				break;
 			case ID_AJUDA_AJUDA:MessageBoxA(hWnd, "\n\tSO2\n\n\n 1º Deve escolher se joga localmente\n ou liga a computador remoto. \n", "Snake Multiplayer", MB_OK);												
-									break;
-
+				break;
 			case ID_CONF_TECLAS_1:DialogBox(hInstGlobal, IDD_TECLAS1, hWnd, ConfigTeclas1);												
 									break;
 
 			case ID_CONF_TECLAS_2:DialogBox(hInstGlobal, IDD_TECLAS2, hWnd, ConfigTeclas2);												
 									break;
+			}
+
+/*==========================================================================================================================
+												Tratar Teclas:
+  ==========================================================================================================================*/
+		case WM_KEYDOWN:
+			if (emJogo) {
+				if (wParam == teclasjogador1.baixo) {//Jogador 1 move-se para baixo
+					chamaMudaDirecao(BAIXO, JOGADOR1);
+				}
+				else if (wParam == teclasjogador1.cima) {//Jogador 1 move-se para cima
+					chamaMudaDirecao(CIMA, JOGADOR1);
+				}
+				else if (wParam == teclasjogador1.esquerda) {//Jogador 1 move-se para esquerda
+					chamaMudaDirecao(ESQUERDA, JOGADOR1);
+				}
+				else if (wParam == teclasjogador1.direita) {//Jogador 1 move-se para a direita
+					chamaMudaDirecao(DIREITA, JOGADOR1);
+				}
+				if (numJogadoresLocal == 2) {
+					if (wParam == teclasjogador2.baixo) {//Jogador 2 move-se para baixo
+						chamaMudaDirecao(BAIXO, JOGADOR2);
 					}
+					else if (wParam == teclasjogador2.cima) {//Jogador 2 move-se para cima
+						chamaMudaDirecao(CIMA, JOGADOR2);
+					}
+					else if (wParam == teclasjogador2.esquerda) {//Jogador 2 move-se para esquerda
+						chamaMudaDirecao(ESQUERDA, JOGADOR2);
+					}
+					else if (wParam == teclasjogador2.direita) {//Jogador 2 move-se para a direita
+						chamaMudaDirecao(DIREITA, JOGADOR2);
+					}
+				}
+			}
+			break;
 		
-			case WM_ERASEBKGND:
-
-				break;
-
-			case WM_PAINT:
-				device = BeginPaint(hWnd, &pintar);
-				BitBlt(device, 0, 0, maxX, maxY, memoriajanela, 0, 0, SRCCOPY);
-				EndPaint(hWnd, &pintar);								
-				break;
-
-			case WM_KEYUP:					
-				break;						
-			default:				
+		default:				
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
 	}
 	return(0);
@@ -813,6 +599,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 int chamaCriaJogo(int *valor) {
 	ConfigInicial aux;
+	ConfigObjecto objectos[NUMTIPOOBJECTOS];
 
 	aux.A = cobrasAutomaticas;
 	aux.C = colunasConfig;
@@ -821,9 +608,21 @@ int chamaCriaJogo(int *valor) {
 	aux.O = numObjectos;
 	aux.T = tamanhoSnakes;
 
+	objectos[ALIMENTO - 1].S = alimento;
+	objectos[GELO - 1].S = gelo;
+	objectos[GRANADA - 1].S = granada;
+	objectos[VODKA - 1].S = vodka;
+	objectos[OLEO - 1].S = oleo;
+	objectos[COLA - 1].S = cola;
+	objectos[O_VODKA - 1].S = o_vodka;
+	objectos[O_OLEO - 1].S = o_oleo;
+	objectos[O_COLA - 1].S = o_cola;
+	objectos[SURPRESA - 1].S = surpresa;
+
+
 	switch (tipoServidor)
 	{
-	case LOCAL:pede_CriaJogo(aux, pId,tId, username1);
+	case LOCAL:pede_CriaJogo(aux, pId,tId, username1,objectos);
 			//ler Resposta e só depois validar
 		WaitForSingleObject(hEventoResposta, INFINITE);
 		ResetEvent(hEventoResposta);
@@ -833,6 +632,15 @@ int chamaCriaJogo(int *valor) {
 	case REMOTO://comunicar por pipes
 		break;
 	default:
+		break;
+	}
+}
+
+void chamaMudaDirecao(int direcao, int jogador) {
+	switch (tipoServidor) {
+	case LOCAL:mudaDirecao(direcao, pId, tId, jogador);
+		break;
+	case REMOTO:
 		break;
 	}
 }
@@ -962,14 +770,118 @@ BOOL CALLBACK ConfigTeclas2(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 
 DWORD WINAPI esperaActualizacao(LPVOID param) {
 	
-	WaitForSingleObject(hEventoMapa, INFINITE);
 	getLimitesMapa(&linhas, &colunas);
 	getMapa(mapa);
+	desenhaMapaNaMemoria();
+	InvalidateRect(janelaglobal, NULL, 0);
 	while (1) {   //enquanto o jogo estiver a continuar
 		WaitForSingleObject(hEventoMapa, INFINITE);
 		getMapa(mapa);
 		desenhaMapaNaMemoria();
 		InvalidateRect(janelaglobal, NULL, 0);
+	}
+}
+
+DWORD WINAPI ligaServidorLocal(LPVOID param) {
+	preparaMemoriaPartilhada();
+	pede_RegistarClienteLocal(pId, tId);
+	Sleep(50);
+	preparaMemoriaPartilhadaResposta(pId, tId);
+	WaitForSingleObject(hEventoResposta, INFINITE);
+	ResetEvent(hEventoResposta);
+	if (vistaResposta->resposta == SUCESSO) {
+		tipoServidor = LOCAL;
+		MessageBox(janelaglobal, TEXT("Ligado a servidor Local"), TEXT("SUCESSO"), MB_OK);
+		EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+		EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+		EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+		EnableMenuItem(hMenu, ID_SERVIDOR_REMOTO, MF_DISABLED);
+		EnableMenuItem(hMenu, ID_SERVIDOR_LOCAL, MF_DISABLED);
+	}
+	else if (vistaResposta->resposta == INSUCESSO) {
+		MessageBox(janelaglobal, TEXT("Não foi possivel ligar ao servidor, contacte o utilizador da maquina"), TEXT("INSUCESSO"), MB_OK);
+	}
+}
+
+DWORD WINAPI ligaServidorRemoto(LPVOID param) {
+	DialogBox(hInstGlobal, IDD_DIALOG3, janelaglobal, IndicaIPRemoto);
+	EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+	EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+	EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+	EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+	EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+}
+
+
+DWORD WINAPI criaJogo(LPVOID param) {
+	int resposta, valor;
+	DialogBox(hInstGlobal, IDD_DIALOG5, janelaglobal, Pede_NomeJogador1);
+	resposta = chamaCriaJogo(&valor);
+	if (resposta == SUCESSO) {
+		MessageBox(janelaglobal, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
+		valorCobra1 = valor;
+		EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+		EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+		EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
+		EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+	}
+	else if (resposta == INSUCESSO) {
+		MessageBox(janelaglobal, TEXT("Não é possivel criar jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+	}
+}
+
+DWORD WINAPI associaJogo(LPVOID param) {
+	int resposta, valor;
+	if (numJogadoresLocal == 0) {
+		DialogBox(hInstGlobal, IDD_DIALOG5, janelaglobal, Pede_NomeJogador1);
+		resposta = chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1, &valor);
+		if (resposta == SUCESSO) {
+			MessageBox(janelaglobal, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
+			valorCobra1 = valor;
+			numJogadoresLocal++;
+		}
+		else if (resposta == INSUCESSO) {
+			if (valor == AGORANAO) {
+				MessageBox(janelaglobal, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+			}
+			else if (valor == JOGOCHEIO) {
+				MessageBox(janelaglobal, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+			}
+		}
+	}
+	else if (numJogadoresLocal == 1) {
+		DialogBox(hInstGlobal, IDD_DIALOG6, janelaglobal, Pede_NomeJogador2);
+		resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
+		if (resposta == SUCESSO) {
+			MessageBox(janelaglobal, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
+			valorCobra2 = valor;
+			numJogadoresLocal++;
+		}
+		else if (resposta == INSUCESSO) {
+			if (valor == AGORANAO) {
+				MessageBox(janelaglobal, TEXT("Não é possivel associar ao jogo neste momento"), TEXT("INSUCESSO"), MB_OK);
+			}
+			else if (valor == JOGOCHEIO) {
+				MessageBox(janelaglobal, TEXT("Não existem mais vagas no jogo"), TEXT("INSUCESSO"), MB_OK);
+			}
+		}
+	}
+}
+
+DWORD WINAPI iniciaJogo(LPVOID param) {
+	int resposta, valor, auxtid;
+	resposta = chamaIniciaJogo(&valor);
+	if (resposta == SUCESSO) {
+		MessageBox(janelaglobal, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &auxtid);
+	}
+	else if (resposta == INSUCESSO) {
+		if (valor == CRIADORERRADO) {
+			MessageBox(janelaglobal, TEXT("Apenas o cliente que criou o jogo pode iniciar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+		}
+		if (valor == AGORANAO) {
+			MessageBox(janelaglobal, TEXT("Deve iniciar o jogo só depois de criar o mesmo!"), TEXT("INSUCESSO"), MB_OK);
+		}
 	}
 }
 
@@ -1037,66 +949,29 @@ void desenhaMapaNaMemoria() {
 					}					
 				}
 				else if (centenas == valorCobra2) {	//a cobra do jogador 2 está na posição ***
-					switch (dezenas) {
-					case BEBADO:switch (unidades)
+					switch (unidades)
 					{//se tiver direção é cabeça senão é corpo da cobra
-					case CIMA:
-						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_cima, 0, 0, SRCCOPY);
+					case CIMA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_cima, 0, 0, SRCCOPY);
 						break;
-					case BAIXO:
-						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_baixo, 0, 0, SRCCOPY);
+					case BAIXO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_baixo, 0, 0, SRCCOPY);
 						break;
-					case ESQUERDA:
-						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_esquerda, 0, 0, SRCCOPY);
+					case ESQUERDA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_esquerda, 0, 0, SRCCOPY);
 						break;
-					case DIREITA:
-						BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_direita, 0, 0, SRCCOPY);
+					case DIREITA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_direita, 0, 0, SRCCOPY);
 						break;
-					default:
-						break;
-					}
-								break;
-					case LEBRE:switch (unidades)
-					{//se tiver direção é cabeça senão é corpo da cobra
-					case CIMA:
-						break;
-					case BAIXO:
-						break;
-					case ESQUERDA:
-						break;
-					case DIREITA:
-						break;
-					default:
-						break;
-					}
-							   break;
-					case TARTARUGA:switch (unidades)
-					{//se tiver direção é cabeça senão é corpo da cobra
-					case CIMA:
-						break;
-					case BAIXO:
-						break;
-					case ESQUERDA:
-						break;
-					case DIREITA:
-						break;
-					default:
-						break;
-					}
-								   break;
-					default://cor normal da cobra 2
-						switch (unidades)
-						{//se tiver direção é cabeça senão é corpo da cobra
-						case CIMA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_cima, 0, 0, SRCCOPY);
+					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
+						switch (dezenas) {
+						case BEBADO:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo4, 0, 0, SRCCOPY);
 							break;
-						case BAIXO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_baixo, 0, 0, SRCCOPY);
+						case LEBRE:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo3, 0, 0, SRCCOPY);
 							break;
-						case ESQUERDA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_esquerda, 0, 0, SRCCOPY);
-							break;
-						case DIREITA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_cab2_direita, 0, 0, SRCCOPY);
-							break;
-						default:
+						case TARTARUGA:
 							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo2, 0, 0, SRCCOPY);
+							break;
+						default://cor normal da cobra 2
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo1, 0, 0, SRCCOPY);
 							break;
 						}
 						break;
@@ -1105,15 +980,29 @@ void desenhaMapaNaMemoria() {
 				else {//está outra cobra na posição
 					switch (unidades)
 					{//se tiver direção é cabeça senão é corpo da cobra
-					case CIMA:
+					case CIMA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_cab3_cima, 0, 0, SRCCOPY);
 						break;
-					case BAIXO:
+					case BAIXO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_cab3_baixo, 0, 0, SRCCOPY);
 						break;
-					case ESQUERDA:
+					case ESQUERDA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_cab3_esquerda, 0, 0, SRCCOPY);
 						break;
-					case DIREITA:
+					case DIREITA:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_cab3_direita, 0, 0, SRCCOPY);
 						break;
-					default://corpo da cobra 3
+					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
+						switch (dezenas) {
+						case BEBADO:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo4, 0, 0, SRCCOPY);
+							break;
+						case LEBRE:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo3, 0, 0, SRCCOPY);
+							break;
+						case TARTARUGA:
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo2, 0, 0, SRCCOPY);
+							break;
+						default://cor normal da cobra 2
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo1, 0, 0, SRCCOPY);
+							break;
+						}
 						break;
 					}
 				}
