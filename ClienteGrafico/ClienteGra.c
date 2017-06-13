@@ -228,8 +228,8 @@ BOOL CALLBACK ConfiguraJogo(HWND h, UINT m, WPARAM w, LPARAM l) {
 				correuBem = FALSE;
 			}
 			else {
-				colunasConfig = aux1;
-				linhasConfig = aux2;
+				linhasConfig = aux1;
+				colunasConfig = aux2;
 			}
 			aux3 = GetDlgItemInt(h, IDC_EDIT3, NULL, TRUE);
 			if (aux3 < TAMANHOSNAKE || aux3 > 6) {
@@ -934,16 +934,16 @@ void desenhaMapaNaMemoria() {
 					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
 						switch (dezenas) {
 						case BEBADO:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo4, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_bebada, 0, 0, SRCCOPY);
 							break;
 						case LEBRE:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo3, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_lebre, 0, 0, SRCCOPY);
 							break;
 						case TARTARUGA:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo2, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_tartaruga, 0, 0, SRCCOPY);
 							break;
 						default://cor normal da cobra 1
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_corpo1, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra1_normal, 0, 0, SRCCOPY);
 							break;
 						}
 						break;
@@ -963,16 +963,16 @@ void desenhaMapaNaMemoria() {
 					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
 						switch (dezenas) {
 						case BEBADO:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo4, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_bebada, 0, 0, SRCCOPY);
 							break;
 						case LEBRE:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo3, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_lebre, 0, 0, SRCCOPY);
 							break;
 						case TARTARUGA:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo2, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_tartaruga, 0, 0, SRCCOPY);
 							break;
 						default://cor normal da cobra 2
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_corpo1, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra2_normal, 0, 0, SRCCOPY);
 							break;
 						}
 						break;
@@ -992,16 +992,16 @@ void desenhaMapaNaMemoria() {
 					case 0://não tem direção quer dizer que é corpo vamos ver o estado da cobra
 						switch (dezenas) {
 						case BEBADO:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo4, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_bebada, 0, 0, SRCCOPY);
 							break;
 						case LEBRE:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo3, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_lebre, 0, 0, SRCCOPY);
 							break;
 						case TARTARUGA:
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo2, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_tartaruga, 0, 0, SRCCOPY);
 							break;
 						default://cor normal da cobra 2
-							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_corpo1, 0, 0, SRCCOPY);
+							BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcobra3_normal, 0, 0, SRCCOPY);
 							break;
 						}
 						break;
@@ -1072,27 +1072,27 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 1 corpo
-					hcobra1_corpo1 = CreateCompatibleDC(device);
+					hcobra1_normal = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1));
-					SelectObject(hcobra1_corpo1, hbit);
+					SelectObject(hcobra1_normal, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 1 corpo ==> LENTA
-					hcobra1_corpo2 = CreateCompatibleDC(device);
+					hcobra1_tartaruga = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_2));
-					SelectObject(hcobra1_corpo2, hbit);
+					SelectObject(hcobra1_tartaruga, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 1 corpo ==> RAPIDA
-					hcobra1_corpo3 = CreateCompatibleDC(device);
+					hcobra1_lebre = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_3));
-					SelectObject(hcobra1_corpo3, hbit);
+					SelectObject(hcobra1_lebre, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 1 corpo ==> BEBADA
-					hcobra1_corpo4 = CreateCompatibleDC(device);
+					hcobra1_bebada = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA1_4));
-					SelectObject(hcobra1_corpo4, hbit);
+					SelectObject(hcobra1_bebada, hbit);
 					DeleteObject(hbit);
 
 	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - COBRA 2 ******/
@@ -1121,27 +1121,27 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 2 corpo
-					hcobra2_corpo1 = CreateCompatibleDC(device);
+					hcobra2_normal = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2));
-					SelectObject(hcobra2_corpo1, hbit);
+					SelectObject(hcobra2_normal, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 2 corpo ==> LENTA
-					hcobra2_corpo2 = CreateCompatibleDC(device);
+					hcobra2_tartaruga = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2_2));
-					SelectObject(hcobra2_corpo2, hbit);
+					SelectObject(hcobra2_tartaruga, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 2 corpo ==> RAPIDA
-					hcobra2_corpo3 = CreateCompatibleDC(device);
+					hcobra2_lebre = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2_3));
-					SelectObject(hcobra2_corpo3, hbit);
+					SelectObject(hcobra2_lebre, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 2 corpo ==> BEBADA
-					hcobra2_corpo4 = CreateCompatibleDC(device);
+					hcobra2_bebada = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA2_4));
-					SelectObject(hcobra2_corpo4, hbit);
+					SelectObject(hcobra2_bebada, hbit);
 					DeleteObject(hbit);
 
 	/****** INICIO FUNÇÕES PARA CARREGAR BITMAPS - COBRA 3 ******/
@@ -1170,27 +1170,27 @@ BOOL CALLBACK CarregaBitmaps(HWND hWnd) {
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 3 corpo
-					hcobra3_corpo1 = CreateCompatibleDC(device);
+					hcobra3_normal = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3));
-					SelectObject(hcobra3_corpo1, hbit);
+					SelectObject(hcobra3_normal, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 3 corpo ==> LENTA
-					hcobra3_corpo2 = CreateCompatibleDC(device);
+					hcobra3_tartaruga = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3_2));
-					SelectObject(hcobra3_corpo2, hbit);
+					SelectObject(hcobra3_tartaruga, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 3 corpo ==> RAPIDA
-					hcobra3_corpo3 = CreateCompatibleDC(device);
+					hcobra3_lebre = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3_3));
-					SelectObject(hcobra3_corpo3, hbit);
+					SelectObject(hcobra3_lebre, hbit);
 					DeleteObject(hbit);
 
 					// Criar janela virtual para cobra 3 corpo ==> BEBADA
-					hcobra3_corpo4 = CreateCompatibleDC(device);
+					hcobra3_bebada = CreateCompatibleDC(device);
 					hbit = LoadBitmap(hInstGlobal, MAKEINTRESOURCE(IDB_CORPOCOBRA3_4));
-					SelectObject(hcobra3_corpo4, hbit);
+					SelectObject(hcobra3_bebada, hbit);
 					DeleteObject(hbit);
 
 

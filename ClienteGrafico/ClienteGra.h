@@ -158,21 +158,21 @@ HDC hprenda;
 
 //*** Cobra 1 ***
 HDC hcobra1_cab1_esquerda, hcobra1_cab1_direita, hcobra1_cab1_cima, hcobra1_cab1_baixo;
-HDC hcobra1_corpo1;
-HDC hcobra1_corpo2;
-HDC hcobra1_corpo3;
-HDC hcobra1_corpo4;
+HDC hcobra1_normal;
+HDC hcobra1_tartaruga;
+HDC hcobra1_lebre;
+HDC hcobra1_bebada;
 
 //*** Cobra 2 ***
 HDC hcobra2_cab2_esquerda, hcobra2_cab2_direita, hcobra2_cab2_cima, hcobra2_cab2_baixo;
-HDC hcobra2_corpo1;
-HDC hcobra2_corpo2;
-HDC hcobra2_corpo3;
-HDC hcobra2_corpo4;
+HDC hcobra2_normal;
+HDC hcobra2_tartaruga;
+HDC hcobra2_lebre;
+HDC hcobra2_bebada;
 
 //*** Cobra 3 ***
 HDC hcobra3_cab3_esquerda, hcobra3_cab3_direita, hcobra3_cab3_cima, hcobra3_cab3_baixo;
-HDC hcobra3_corpo1;
-HDC hcobra3_corpo2;
-HDC hcobra3_corpo3;
-HDC hcobra3_corpo4;
+HDC hcobra3_normal;
+HDC hcobra3_tartaruga;
+HDC hcobra3_lebre;
+HDC hcobra3_bebada;
