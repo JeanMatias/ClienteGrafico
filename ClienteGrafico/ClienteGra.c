@@ -873,6 +873,7 @@ DWORD WINAPI iniciaJogo(LPVOID param) {
 	resposta = chamaIniciaJogo(&valor);
 	if (resposta == SUCESSO) {
 		MessageBox(janelaglobal, TEXT("Jogo Iniciado"), TEXT("SUCESSO"), MB_OK);//lançar as threads de actualização do mapa
+		emJogo = TRUE;
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)esperaActualizacao, (LPVOID)NULL, 0, &auxtid);
 	}
 	else if (resposta == INSUCESSO) {
@@ -894,7 +895,7 @@ void desenhaMapaNaMemoria() {
 				break;
 			case ESPACOVAZIO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hfundo, 0, 0, SRCCOPY);
 				break;
-			case ALIMENTO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hmouse, 0, 0, SRCCOPY);
+			case ALIMENTO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hcomida, 0, 0, SRCCOPY);
 				break;
 			case GELO:BitBlt(memoriajanela, x * 20, y * 20, 20, 20, hgelo, 0, 0, SRCCOPY);
 				break;
