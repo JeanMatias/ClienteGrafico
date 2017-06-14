@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <tchar.h>
 #include "resource.h"
-#include "..\..\SnakeDLL\SnakeDLL\SnakeDLL.h"
+#include "SnakeDLL.h"
 
 
 /* ======================================================================= */
@@ -72,6 +72,7 @@ int valorCobra1 = 0;				//valor da cobra do jogador 1 desta maquina
 int valorCobra2 = 0;				//valor da cobra do jogador 2 desta maquina
 TCHAR username1[SIZE_USERNAME];				//Nome do Jogador 1 desta Maquina
 TCHAR username2[SIZE_USERNAME];				//Nome do Jogador 2 desta Maquina
+TCHAR ipServidor[SIZE_IP];					//IP do servidor
 int pId;									//Process Id deste cliente
 int tId;									//Thread Id da thread principal deste cliente
 int linhas;
@@ -94,7 +95,11 @@ int chamaCriaJogo(int *valor);
 int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor);
 void chamaMudaDirecao(int direcao, int jogador);
 void desenhaMapaNaMemoria();
-
+int criaJogoRemoto(int *valor, ConfigInicial aux, ConfigObjecto objetos[NUMTIPOOBJECTOS]);
+void mudaDirecaoRemoto(int direcao, int jogador);
+int associaJogoRemoto(TCHAR username[SIZE_USERNAME], int codigo, int *valor);
+int iniciaJogoRemoto(int *valor);
+void enviaSair();
 
 /* --------------------------------------------------------- */
 /*				  PROTOTIPOS FUNÇÕES DE THREADS				 */
@@ -126,6 +131,8 @@ LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);//JANELA PRINCIPAL
 /* --------------------------------------------------------- */
 /*                   HANDLES GLOBAIS                         */
 /* --------------------------------------------------------- */
+HANDLE hPipeServidor, hEventoPipeLido;
+
 
 HINSTANCE	hInstGlobal;
 HMENU		hMenu;

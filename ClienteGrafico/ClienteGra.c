@@ -187,19 +187,20 @@ BOOL CALLBACK IndicaIPRemoto(HWND h, UINT m, WPARAM w, LPARAM l) {
 		switch (LOWORD(w))
 		{
 		case IDCANCEL:
-			EndDialog(h, 0);
-			//return 1;
+			EndDialog(h, INSUCESSO);
+			return 1;
 		case IDOK:
-			
-			break;
+			GetDlgItemText(h, IDC_EDIT7, ipServidor, SIZE_IP);
+			EndDialog(h, SUCESSO);
+			return 1;
 		}
 		break;
 	case WM_CLOSE:
-		EndDialog(h, 0);
+		EndDialog(h, INSUCESSO);
 		return 1;
 
 	case WM_INITDIALOG:
-	
+		SendDlgItemMessage(h, IDC_EDIT7, EM_LIMITTEXT, SIZE_IP, NULL);
 		return 1;
 	}
 	//Não foi tratado o evento
@@ -508,7 +509,10 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 					fechaMemoriaPartilhadaGeral();
 					fechaMemoriaPartilhadaResposta();
 				}
-
+				else if (tipoServidor == REMOTO) {
+					enviaSair();
+					CloseHandle(hPipeServidor);
+				}
 				PostQuitMessage(0);
 			}
 			return 1;
@@ -630,19 +634,60 @@ int chamaCriaJogo(int *valor) {
 		return vistaResposta->resposta;
 		break;
 	case REMOTO://comunicar por pipes
-		break;
-	default:
+		return criaJogoRemoto(valor, aux, objectos);
 		break;
 	}
+}
+
+void enviaSair() {
+	Pedido auxPedido;
+	DWORD n;
+	auxPedido.codigoPedido = SAIR;
+	auxPedido.pid = pId;
+	auxPedido.tid = tId;
+
+	WriteFile(hPipeServidor, &auxPedido, SIZEPEDIDO, &n, NULL);
+}
+
+int criaJogoRemoto(int *valor,ConfigInicial aux,ConfigObjecto objetos[NUMTIPOOBJECTOS]) {
+	Pedido auxPedido;
+	Resposta auxResposta;
+	DWORD n;
+	auxPedido.codigoPedido = CRIARJOGO;
+	auxPedido.pid = pId;
+	auxPedido.tid = tId;
+	_tcscpy_s(auxPedido.username, SIZE_USERNAME, username1);
+	auxPedido.config = aux;
+	for (int i = 0; i < NUMTIPOOBJECTOS; i++) {
+		auxPedido.objectosConfig[i].S = objetos[i].S;
+	}
+
+	WriteFile(hPipeServidor, &auxPedido, SIZEPEDIDO, &n, NULL);
+
+	ReadFile(hPipeServidor, &auxResposta, SIZERESPOSTA, &n, NULL);
+
+	*valor = auxResposta.valor;
+	return auxResposta.resposta;
 }
 
 void chamaMudaDirecao(int direcao, int jogador) {
 	switch (tipoServidor) {
 	case LOCAL:mudaDirecao(direcao, pId, tId, jogador);
 		break;
-	case REMOTO:
+	case REMOTO:mudaDirecaoRemoto(direcao, jogador);
 		break;
 	}
+}
+
+void mudaDirecaoRemoto(int direcao, int jogador) {
+	Pedido auxPedido;
+	DWORD n;
+	auxPedido.codigoPedido = direcao;
+	auxPedido.pid = pId;
+	auxPedido.tid = tId;
+	auxPedido.jogador = jogador;
+
+	WriteFile(hPipeServidor, &auxPedido, SIZEPEDIDO, &n, NULL);
 }
 
 int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor) {
@@ -657,10 +702,28 @@ int chamaAssociaJogo(TCHAR username[SIZE_USERNAME], int codigo, int *valor) {
 			return vistaResposta->resposta;
 		break;
 	case REMOTO://comunicar por pipes
+		return associaJogoRemoto(username, codigo, valor);
 		break;
 	default:
 		break;
 	}
+}
+
+int associaJogoRemoto(TCHAR username[SIZE_USERNAME], int codigo, int *valor) {
+	Pedido auxPedido;
+	Resposta auxResposta;
+	DWORD n;
+	auxPedido.codigoPedido = codigo;
+	auxPedido.pid = pId;
+	auxPedido.tid = tId;
+	_tcscpy_s(auxPedido.username, SIZE_USERNAME, username);
+
+	WriteFile(hPipeServidor, &auxPedido, SIZEPEDIDO, &n, NULL);
+
+	ReadFile(hPipeServidor, &auxResposta, SIZERESPOSTA, &n, NULL);
+
+	*valor = auxResposta.valor;
+	return auxResposta.resposta;
 }
 
 int chamaIniciaJogo(int *valor) {
@@ -675,10 +738,25 @@ int chamaIniciaJogo(int *valor) {
 		return vistaResposta->resposta;
 		break;
 	case REMOTO://comunicar por pipes
-		break;
-	default:
+		return iniciaJogoRemoto(valor);
 		break;
 	}
+}
+
+int iniciaJogoRemoto( int *valor) {
+	Pedido auxPedido;
+	Resposta auxResposta;
+	DWORD n;
+	auxPedido.codigoPedido = INICIARJOGO;
+	auxPedido.pid = pId;
+	auxPedido.tid = tId;
+
+	WriteFile(hPipeServidor, &auxPedido, SIZEPEDIDO, &n, NULL);
+
+	ReadFile(hPipeServidor, &auxResposta, SIZERESPOSTA, &n, NULL);
+
+	*valor = auxResposta.valor;
+	return auxResposta.resposta;
 }
 
 /* ----------------------------------------------------- */
@@ -804,22 +882,69 @@ DWORD WINAPI ligaServidorLocal(LPVOID param) {
 }
 
 DWORD WINAPI ligaServidorRemoto(LPVOID param) {
-	DialogBox(hInstGlobal, IDD_DIALOG3, janelaglobal, IndicaIPRemoto);
-	EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
-	EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
-	EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
-	EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
-	EnableMenuItem(hMenu, ID_CONF_TECLAS_2, MF_ENABLED);
+	TCHAR aux[SIZE_PIPENAME];
+	Pedido auxPedido;
+	Resposta auxResposta;
+	DWORD n;
+	auxPedido.codigoPedido = REGISTACLIENTEREMTO;
+	auxPedido.pid = pId;
+	auxPedido.tid = tId;
+	_tcscpy_s(auxPedido.username, SIZE_USERNAME, TEXT(" "));
+
+
+	if (DialogBox(hInstGlobal, IDD_DIALOG3, janelaglobal, IndicaIPRemoto) == SUCESSO) {
+
+		while (1) {
+			if(_tcscmp(ipServidor,TEXT("")) == 0)
+				_stprintf_s(aux, SIZE_PIPENAME, PIPE_ATENDE,TEXT("."));
+			else 
+				_stprintf_s(aux, SIZE_PIPENAME, PIPE_ATENDE, ipServidor);
+			// Criar pipe
+			hPipeServidor = CreateFile(aux, GENERIC_READ | GENERIC_WRITE, 0 | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0 , NULL);
+			if (hPipeServidor != INVALID_HANDLE_VALUE) {
+				break;
+			}
+
+			//O handle é inválido mas não é por o pipe estar ocupado então sai
+			if (GetLastError() != ERROR_PIPE_BUSY) {
+				PostQuitMessage(0);
+				return;
+			}
+
+			//Espera por uma vaga no Pipe
+			if (!WaitNamedPipe(aux, TIMEOUT_VAGA)) {
+				MessageBox(janelaglobal, TEXT("Não foi possivel ligar ao servidor"), TEXT("INSUCESSO"), MB_OK);
+				return;
+			}
+		}
+
+		WriteFile(hPipeServidor, &auxPedido, SIZEPEDIDO, &n, NULL);
+
+		ReadFile(hPipeServidor, &auxResposta, SIZERESPOSTA, &n, NULL);
+
+		if (auxResposta.resposta == SUCESSO) {
+			EnableMenuItem(hMenu, ID_JOGO_CRIAR, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_SERVIDOR_REMOTO, MF_DISABLED);
+			EnableMenuItem(hMenu, ID_SERVIDOR_LOCAL, MF_DISABLED);
+			MessageBox(janelaglobal, TEXT("Ligado ao servidor Remoto"), TEXT("SUCESSO"), MB_OK);
+			tipoServidor = REMOTO;
+		}		
+	}
+	
 }
 
 
 DWORD WINAPI criaJogo(LPVOID param) {
 	int resposta, valor;
-	DialogBox(hInstGlobal, IDD_DIALOG5, janelaglobal, Pede_NomeJogador1);
+	if (DialogBox(hInstGlobal, IDD_DIALOG5, janelaglobal, Pede_NomeJogador1) == INSUCESSO)
+		return;
 	resposta = chamaCriaJogo(&valor);
 	if (resposta == SUCESSO) {
 		MessageBox(janelaglobal, TEXT("Jogo Criado"), TEXT("SUCESSO"), MB_OK);
 		valorCobra1 = valor;
+		numJogadoresLocal++;
 		EnableMenuItem(hMenu, ID_JOGO_ASSOCIAR, MF_ENABLED);
 		EnableMenuItem(hMenu, ID_JOGO_JOGAR, MF_ENABLED);
 		EnableMenuItem(hMenu, ID_CONF_TECLAS_1, MF_ENABLED);
@@ -833,7 +958,8 @@ DWORD WINAPI criaJogo(LPVOID param) {
 DWORD WINAPI associaJogo(LPVOID param) {
 	int resposta, valor;
 	if (numJogadoresLocal == 0) {
-		DialogBox(hInstGlobal, IDD_DIALOG5, janelaglobal, Pede_NomeJogador1);
+		if (DialogBox(hInstGlobal, IDD_DIALOG5, janelaglobal, Pede_NomeJogador1) == INSUCESSO)
+			return;
 		resposta = chamaAssociaJogo(username1, ASSOCIAR_JOGADOR1, &valor);
 		if (resposta == SUCESSO) {
 			MessageBox(janelaglobal, TEXT("Jogador 1 Associado"), TEXT("SUCESSO"), MB_OK);
@@ -850,7 +976,8 @@ DWORD WINAPI associaJogo(LPVOID param) {
 		}
 	}
 	else if (numJogadoresLocal == 1) {
-		DialogBox(hInstGlobal, IDD_DIALOG6, janelaglobal, Pede_NomeJogador2);
+		if (DialogBox(hInstGlobal, IDD_DIALOG6, janelaglobal, Pede_NomeJogador2) == INSUCESSO)
+			return;
 		resposta = chamaAssociaJogo(username2, ASSOCIAR_JOGADOR2, &valor);
 		if (resposta == SUCESSO) {
 			MessageBox(janelaglobal, TEXT("Jogador 2 Associado"), TEXT("SUCESSO"), MB_OK);
